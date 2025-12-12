@@ -24,24 +24,10 @@ module.exports = function(config) {
         [
           'stringify',
           {
-            extensions: ['.html', '.tpl']
+            extensions: ['.html', '.tpl', '.css']
           }
         ],
         'deamdify',
-        [
-          'sassify',
-          {
-            base64Encode: false,
-            sourceMap: false,
-            sourceMapEmbed: false,
-            sourceMapContents: false,
-            outputStyle: 'compact',
-            includePaths: [].concat(
-              require('bourbon').includePaths,
-              'src/styles'
-            )
-          }
-        ],
         [
           'browserify-istanbul',
           {
