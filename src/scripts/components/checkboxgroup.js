@@ -3,7 +3,7 @@
 module.exports = {
   name: 'checkboxgroup',
   template: require('../../templates/components/checkboxgroup.tpl'),
-  style: require('../../styles/clay/components/checkboxgroup.scss'),
+  style: require('../../../tmp/checkboxgroup.css'),
   manipulator: 'checkboxgroup',
   defaults: {
     label: '',

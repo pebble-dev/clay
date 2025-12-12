@@ -3,7 +3,7 @@
 module.exports = {
   name: 'color',
   template: require('../../templates/components/color.tpl'),
-  style: require('../../styles/clay/components/color.scss'),
+  style: require('../../../tmp/color.css'),
   manipulator: 'color',
   defaults: {
     label: '',
