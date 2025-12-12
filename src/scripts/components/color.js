@@ -114,14 +114,15 @@ module.exports = {
      * @returns {Array}
      */
     function autoLayout() {
+      const bwWatches = ['aplite', 'diorite', 'flint'];
       if (!clay.meta.activeWatchInfo ||
           clay.meta.activeWatchInfo.firmware.major === 2 ||
-          ['aplite', 'diorite'].indexOf(clay.meta.activeWatchInfo.platform) > -1 &&
+          bwWatches.indexOf(clay.meta.activeWatchInfo.platform) > -1 &&
           !self.config.allowGray) {
         return standardLayouts.BLACK_WHITE;
       }
 
-      if (['aplite', 'diorite'].indexOf(clay.meta.activeWatchInfo.platform) > -1 &&
+      if (bwWatches.indexOf(clay.meta.activeWatchInfo.platform) > -1 &&
           self.config.allowGray) {
         return standardLayouts.GRAY;
       }

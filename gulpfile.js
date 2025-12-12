@@ -35,6 +35,9 @@ gulp.task('clean-js', function() {
   return del(['tmp/config-page.js']);
 });
 
+/**
+* @returns {string}
+*/
 function taskJs() {
   return browserify('src/scripts/config-page.js', { debug: true })
     .transform('deamdify')
@@ -49,8 +52,12 @@ gulp.task('clean-sass', function() {
   return del(['tmp/config-page.scss']);
 });
 
+/**
+* @returns {string}
+*/
 function taskSass() {
-  return gulp.src(['./src/styles/config-page.scss', './src/styles/clay/components/*.scss'])
+  return gulp.src(['./src/styles/config-page.scss',
+                   './src/styles/clay/components/*.scss'])
     .pipe(sourceMaps.init())
     .pipe(sass({
       loadPaths: sassIncludePaths
@@ -62,6 +69,9 @@ function taskSass() {
 
 gulp.task('sass', gulp.series('clean-sass', taskSass));
 
+/**
+* @returns {string}
+*/
 function taskInlineHtml() {
   return gulp.src('src/config-page.html')
     .pipe(inline())
@@ -79,6 +89,9 @@ function taskInlineHtml() {
 
 gulp.task('inlineHtml', gulp.series('js', 'sass', taskInlineHtml));
 
+/**
+* @returns {string}
+*/
 function taskClay() {
   return browserify('index.js', {
     debug: false,
@@ -86,7 +99,7 @@ function taskClay() {
   })
     .transform('deamdify')
     .transform(stringify(stringifyOptions))
-    //.transform(autoprefixify, autoprefixerOptions)
+    // .transform(autoprefixify, autoprefixerOptions)
     .require(require.resolve('./index'), {expose: clayPackage.name})
     .exclude('message_keys')
     .bundle()
@@ -101,6 +114,9 @@ function taskClay() {
 
 gulp.task('clay', gulp.series('inlineHtml', taskClay));
 
+/**
+* @returns {string}
+*/
 function taskDevJs() {
   return browserify('dev/dev.js', { debug: true })
     .transform(stringify(stringifyOptions))
@@ -116,6 +132,9 @@ gulp.task('dev-js', gulp.series('js', 'sass', taskDevJs));
 
 gulp.task('default', gulp.series('clay'));
 
+/**
+* @returns {string}
+*/
 function taskDev() {
   gulp.watch('src/styles/**/*.scss', ['sass']);
   gulp.watch(['src/scripts/**/*.js', 'src/templates/**/*.tpl'], ['js']);

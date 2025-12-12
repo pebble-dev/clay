@@ -44,8 +44,13 @@ module.exports.capabilityMap = {
     minFwMajor: 0,
     minFwMinor: 0
   },
+  PLATFORM_FLINT: {
+    platforms: ['flint'],
+    minFwMajor: 0,
+    minFwMinor: 0
+  },
   BW: {
-    platforms: ['aplite', 'diorite'],
+    platforms: ['aplite', 'diorite', 'flint'],
     minFwMajor: 0,
     minFwMinor: 0
   },
@@ -55,7 +60,7 @@ module.exports.capabilityMap = {
     minFwMinor: 0
   },
   MICROPHONE: {
-    platforms: ['basalt', 'chalk', 'diorite', 'emery'],
+    platforms: ['basalt', 'chalk', 'diorite', 'emery', 'flint'],
     minFwMajor: 0,
     minFwMinor: 0
   },
@@ -70,12 +75,12 @@ module.exports.capabilityMap = {
     minFwMinor: 4
   },
   HEALTH: {
-    platforms: ['basalt', 'chalk', 'diorite', 'emery'],
+    platforms: ['basalt', 'chalk', 'diorite', 'emery', 'flint'],
     minFwMajor: 3,
     minFwMinor: 10
   },
   RECT: {
-    platforms: ['aplite', 'basalt', 'diorite', 'emery'],
+    platforms: ['aplite', 'basalt', 'diorite', 'emery', 'flint'],
     minFwMajor: 0,
     minFwMinor: 0
   },
@@ -85,7 +90,7 @@ module.exports.capabilityMap = {
     minFwMinor: 0
   },
   DISPLAY_144x168: {
-    platforms: ['aplite', 'basalt', 'diorite'],
+    platforms: ['aplite', 'basalt', 'diorite', 'flint'],
     minFwMajor: 0,
     minFwMinor: 0
   },
