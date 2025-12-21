@@ -1,0 +1,29 @@
+name: Build CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    container:
+      image: ghcr.io/pebble-dev/pebbleos-docker:v1
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up uv
+      uses: astral-sh/setup-uv@v7
+    - run: uv tool install pebble-tool
+    - run: npm install
+    - run: npm run build
+    - run: pebble build
+    - uses: actions/upload-artifact@v4
+      with:
+        name: clay
+        path: dist.zip
+

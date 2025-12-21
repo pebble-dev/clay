@@ -1,52 +1,30 @@
 # Clay
 Clay is a JavaScript library that makes it easy to add offline configuration pages to your Pebble apps. All you need to get started is a couple lines of JavaScript and a JSON file; no servers or HTML required. 
 
-Clay will by default automatically handle the 'showConfiguration' and 'webviewclosed' events traditionally implemented by developers to relay configuration settings to the watch side of the app. This step is not required when using Clay, since each config item is given the same `messageKey` as defined in `package.json` (or PebbleKit JS Message Keys on CloudPebble), and is automatically transmitted once the configuration page is submitted by the user. Developers can override this behavior by [handling the events manually](#handling-the-showconfiguration-and-webviewclosed-events-manually).
+Clay will by default automatically handle the 'showConfiguration' and 'webviewclosed' events traditionally implemented by developers to relay configuration settings to the watch side of the app. This step is not required when using Clay, since each config item is given the same `messageKey` as defined in `package.json`, and is automatically transmitted once the configuration page is submitted by the user. Developers can override this behavior by [handling the events manually](#handling-the-showconfiguration-and-webviewclosed-events-manually).
 
-Clay is distributed as a [Pebble package](https://developer.pebble.com/guides/pebble-packages/) so it is super easy to include in your project. If you are upgrading from v0.1.x of Clay you need to follow the [migration guide](#migrating-from-v01x-to-v1x) before you can get started.
+Clay is distributed as a [Pebble package](https://developer.rebble.io/guides/pebble-packages/) so it is super easy to include in your project. If you are upgrading from v0.1.x of Clay you need to follow the [migration guide](#migrating-from-v01x-to-v1x) before you can get started.
 
 If you would like to contribute to Clay, check out the [contributing guide.](CONTRIBUTING.md)
 
 # Getting Started (SDK 3.13 or higher)
 
-1. Run `pebble package install pebble-clay` to install the package in your project
+1. Run `pebble package install @rebble/clay` to install the package in your project
 2. Create a JSON file called `config.json` and place it in your `src/js` directory.
 3. In order for JSON files to work you may need to change a line in your `wscript` from `ctx.pbl_bundle(binaries=binaries, js=ctx.path.ant_glob('src/js/**/*.js'))` to `ctx.pbl_bundle(binaries=binaries, js=ctx.path.ant_glob(['src/js/**/*.js', 'src/js/**/*.json']))`.
 4. Your `index.js` (`app.js` in SDK 3) file needs to `require` clay and your config file, then be initialized. Clay will by default automatically handle the 'showConfiguration' and 'webviewclosed' events. Copy and paste the following into the top of your `index.js` file:
 
   ```javascript
-  var Clay = require('pebble-clay');
+  var Clay = require('@rebble/clay');
   var clayConfig = require('./config.json');
   var clay = new Clay(clayConfig);
   ```
 5. Ensure `pebble.enableMultiJS` is set to true in your `package.json`.
 6. Next is the fun part - creating your config page. Edit your `config.json` file to build a layout of elements as described in the sections below.
-7. Make sure you have defined all of your `messageKeys` in your `package.json`. More info on how that works [here.](https://developer.pebble.com/guides/communication/using-pebblekit-js/#defining-keys)
-
-# Getting Started (CloudPebble)
-
-1. Ensure `JS Handling` is set to `CommonJS-style` in your project settings.
-2. Under `Dependencies` in the project navigation, enter `pebble-clay` as the `Package Name` and `^1.0.0` for the `Version`. You may use any specific version you like, however using `^1.0.0` will ensure you receive all minor version updates.
-4. Create a JavaScript file called `config.js` with the following content. This will act as your config's root array element, from which the rest of the page is built up:
-
-  ```javascript
-  module.exports = [];
-  ```
-5. Your `index.js` file needs to `require` clay and your config file, then be initialized. Clay will by default automatically handle the 'showConfiguration' and 'webviewclosed' events. Copy and paste the following into the top of your `app.js` file:
-
-  ```javascript
-  var Clay = require('pebble-clay');
-  var clayConfig = require('./config');
-  var clay = new Clay(clayConfig);
-  ```
-6. Next is the fun part - creating your config page. Edit your `config.js` file to build a layout of elements as described in the sections below.
-7. Make sure you have defined all of your message keys using `Automatic assignment` in your project settings. More info on how that works [here.](https://developer.pebble.com/guides/communication/using-pebblekit-js/#defining-keys)
-
-# Getting Started (Pebble.js)
-If you are using [Pebble.js](https://developer.pebble.com/docs/pebblejs/) and would like to use Clay, The setup process is a little different. Pebble.js does not currently support message keys so you will have to use [v0.1.7](https://github.com/pebble/clay/releases/v0.1.7) of Clay. Follow the instructions in the [readme for that version.](https://github.com/pebble/clay/blob/v0.1.7/README.md) 
+7. Make sure you have defined all of your `messageKeys` in your `package.json`. More info on how that works [here.](https://developer.rebble.io/guides/communication/using-pebblekit-js/#defining-keys)
 
 # Getting Started (Rocky.js)
-If you are using [Rocky.js](https://developer.pebble.com/docs/rockyjs/) and would like to use Clay, please be aware that this is currently unsupported. It is possible to install the Clay package and override the 'showConfiguration' and 'webviewclosed' events and handle them manually, but Rocky.js does not currently support persistent storage, so the settings must be loaded from the phone each time. You can find an example of using Clay with Rocky.js [here](https://github.com/orviwan/rocky-leco-clay).
+If you are using [Rocky.js](https://developer.rebble.io/docs/rockyjs/) and would like to use Clay, please be aware that this is currently unsupported. It is possible to install the Clay package and override the 'showConfiguration' and 'webviewclosed' events and handle them manually, but Rocky.js does not currently support persistent storage, so the settings must be loaded from the phone each time. You can find an example of using Clay with Rocky.js [here](https://github.com/orviwan/rocky-leco-clay).
 
 # Creating Your Config File
 
@@ -369,7 +347,7 @@ The color picker will automatically show a different layout depending on the wat
 | id | string (unique) | Set this to a unique string to allow this item to be looked up using `Clay.getItemById()` in your [custom function](#custom-function). |
 | messageKey | string (unique) | The AppMessage key matching the `messageKey` item defined in your `package.json`.  Set this to a unique string to allow this item to be looked up using `Clay.getItemsByMessageKey()` in your custom function. You must set this if you wish for the value of this item to be persisted after the user closes the config page. |
 | label | string | The label that should appear next to this item. |
-| defaultValue | string OR int | The default color. One of the [64 colors](https://developer.pebble.com/guides/tools-and-resources/color-picker/) compatible with Pebble smartwatches. Always use the uncorrected value even if `sunlight` is true. The component will do the conversion internally. |
+| defaultValue | string OR int | The default color. One of the [64 colors](https://developer.rebble.io/guides/tools-and-resources/color-picker/) compatible with Pebble smartwatches. Always use the uncorrected value even if `sunlight` is true. The component will do the conversion internally. |
 | description | string | Optional sub-text to include below the component |
 | sunlight | boolean | Use the color-corrected sunlight color palette if `true`, else the uncorrected version. Defaults to `true` if not specified. |
 | layout | string OR array | Optional. Use a custom layout for the color picker. Defaults to automatically choosing the most appropriate layout for the connected watch. The layout is represented by a two dimensional array. Use `false` to insert blank spaces. You may also use one of the preset layouts by setting `layout` to: `"COLOR"`, `"GRAY"` or `"BLACK_WHITE"` |
@@ -480,7 +458,7 @@ A list of options where a user may choose more than one option to submit.
 |----------|------|-------------|
 | type | string | Set to `checkboxgroup`. |
 | id | string (unique) | Set this to a unique string to allow this item to be looked up using `Clay.getItemById()` in your [custom function](#custom-function). |
-| messageKey | string (unique) | The AppMessage key matching the `messageKey` item defined in your `package.json`.  Set this to a unique string to allow this item to be looked up using `Clay.getItemsByMessageKey()` in your custom function. You must set this if you wish for the value of this item to be persisted after the user closes the config page. **NOTE:** The checkboxgroup component will expect you to have defined a `messageKey` in your `package.json` using array syntax. In the example below, the matching entry in the `package.json` would be `favorite_food[3]`. In CloudPebble, you must use `Automatic assignment` for message keys and the `Key Array Length` must match the number of options in the checkboxgroup |
+| messageKey | string (unique) | The AppMessage key matching the `messageKey` item defined in your `package.json`.  Set this to a unique string to allow this item to be looked up using `Clay.getItemsByMessageKey()` in your custom function. You must set this if you wish for the value of this item to be persisted after the user closes the config page. **NOTE:** The checkboxgroup component will expect you to have defined a `messageKey` in your `package.json` using array syntax. In the example below, the matching entry in the `package.json` would be `favorite_food[3]`. |
 | label | string | The label that should appear next to this item. |
 | defaultValue | array of booleans | The default selected items. |
 | description | string | Optional sub-text to include below the component |
@@ -605,7 +583,7 @@ The submit button for the page. You **MUST** include this component somewhere in
 
 ### Message keys and array syntax
 
-Clay supports (and requires in some cases) the use of array syntax for message keys. Also known as `Automatic assignment` in CloudPebble. More info [here.](https://developer.pebble.com/guides/communication/using-pebblekit-js/#defining-keys)
+Clay supports (and requires in some cases) the use of array syntax for message keys. More info [here.](https://developer.rebble.io/guides/communication/using-pebblekit-js/#defining-keys)
 
 You can assign any component that does not return an array to a particular position in your message key. This is done by appending the position (zero indexed) wrapped in brackets to the end of the `messageKey` property. Do **NOT** include any spaces in your `messageKey`.
 
@@ -685,7 +663,8 @@ Below is the full list of capabilities
 | PLATFORM_BASALT | Running on Pebble Time/Pebble Time Steel. |
 | PLATFORM_CHALK | Running on Pebble Time Round. |
 | PLATFORM_DIORITE | Running on Pebble 2 |
-| PLATFORM_EMERY | Running on Time 2. |
+| PLATFORM_EMERY | Running on Core Time 2. |
+| PLATFORM_FLINT | Running on Core 2 Duo. |
 | BW | Running on hardware that supports only black and white. |
 | COLOR | Running on hardware that supports 64 colors. |
 | MICROPHONE | Running on hardware that includes a microphone. |
@@ -807,7 +786,7 @@ Clay will by default, automatically handle the 'showConfiguration' and 'webviewc
 Example:
 
 ```javascript
-var Clay = require('pebble-clay');
+var Clay = require('@rebble/clay');
 var clayConfig = require('./config');
 var clayConfigAplite = require('./config-aplite');
 var clay = new Clay(clayConfig, null, { autoHandleEvents: false });
@@ -862,9 +841,9 @@ Pebble.addEventListener('webviewclosed', function(e) {
 | `.config` | Array | Copy of the config passed to the constructor and used for generating the page. |
 | `.customFn` | Function | Reference to the custom function passed to the constructor. **WARNING** this is a direct reference, not a copy of the custom function so any modification you make to it, will be reflected on the original as well |
 | `.meta` | Object | Contains information about the current user and watch. **WARNING** This will only be populated in the `showConfiguration` event handler. (See example above) |
-| `.meta.activeWatchInfo` | watchinfo\|null | An object containing information on the currently connected Pebble smartwatch or null if unavailable. Read more [here](https://developer.pebble.com/docs/js/Pebble/#getActiveWatchInfo). |
-| `.meta.accountToken` | String | A unique account token that is associated with the Pebble account of the current user. Read more [here](https://developer.pebble.com/docs/js/Pebble/#getAccountToken). |
-| `.meta.watchToken` | String | A unique token that can be used to identify a Pebble device. Read more [here](https://developer.pebble.com/docs/js/Pebble/#getWatchToken). |
+| `.meta.activeWatchInfo` | watchinfo\|null | An object containing information on the currently connected Pebble smartwatch or null if unavailable. Read more [here](https://developer.rebble.io/docs/js/Pebble/#getActiveWatchInfo). |
+| `.meta.accountToken` | String | A unique account token that is associated with the Pebble account of the current user. Read more [here](https://developer.rebble.io/docs/js/Pebble/#getAccountToken). |
+| `.meta.watchToken` | String | A unique token that can be used to identify a Pebble device. Read more [here](https://developer.rebble.io/docs/js/Pebble/#getWatchToken). |
 | `.meta.userData` | Any | A deep copy of the arbitrary data provided in the `options.userData`. Defaults to an empty object |
 | `.version` | String | The version of Clay currently being used. |
 
@@ -929,7 +908,7 @@ Make sure to always wait for the config page to be built before manipulating ite
 ##### app.js
 
 ```javascript
-var Clay = require('pebble-clay');
+var Clay = require('@rebble/clay');
 var clayConfig = require('./config');
 var customClay = require('./custom-clay');
 var userData = {token: 'abc123'}
@@ -992,9 +971,9 @@ This is the main way of talking to your generated config page. An instance of th
 | `.EVENTS.AFTER_DESTROY` | String | Dispatched after destroying the page. |
 | `.config` | Array | Reference to the config passed to the constructor and used for generating the page. |
 | `.meta` | Object | Contains information about the current user and watch |
-| `.meta.activeWatchInfo` | watchinfo\|null | An object containing information on the currently connected Pebble smartwatch or null if unavailable. Read more [here](https://developer.pebble.com/docs/js/Pebble/#getActiveWatchInfo). |
-| `.meta.accountToken` | String | A unique account token that is associated with the Pebble account of the current user. Read more [here](https://developer.pebble.com/docs/js/Pebble/#getAccountToken). |
-| `.meta.watchToken` | String | A unique token that can be used to identify a Pebble device. Read more [here](https://developer.pebble.com/docs/js/Pebble/#getWatchToken). |
+| `.meta.activeWatchInfo` | watchinfo\|null | An object containing information on the currently connected Pebble smartwatch or null if unavailable. Read more [here](https://developer.rebble.io/docs/js/Pebble/#getActiveWatchInfo). |
+| `.meta.accountToken` | String | A unique account token that is associated with the Pebble account of the current user. Read more [here](https://developer.rebble.io/docs/js/Pebble/#getAccountToken). |
+| `.meta.watchToken` | String | A unique token that can be used to identify a Pebble device. Read more [here](https://developer.rebble.io/docs/js/Pebble/#getWatchToken). |
 | `.meta.userData` | Any | The data passed in the `options.userData` of the [Clay constructor.](#clayarray-config-function-customfn-object-options) |
 
 
@@ -1067,7 +1046,7 @@ Components are simple objects with the following properties.
 Components must be registered before the config page is built. The easiest way to do this is in your `app.js` after you have initialized Clay:
 
 ```javascript
-var Clay = require('pebble-clay');
+var Clay = require('@rebble/clay');
 var clayConfig = require('./config.json');
 var clay = new Clay(clayConfig);
 

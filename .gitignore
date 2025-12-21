@@ -3,7 +3,7 @@
 
 # node-waf configuration
 .lock-wscript
-/.lock-waf_darwin_build
+/.lock-waf_*_build
 
 # Dependency directory
 # https://www.npmjs.org/doc/misc/npm-faq.html#should-i-check-my-node_modules-folder-into-git
@@ -13,4 +13,5 @@
 /tmp/
 /src/js/index.js
 /dist.zip
+/dist/
 /build/

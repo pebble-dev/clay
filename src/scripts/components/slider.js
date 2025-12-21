@@ -3,7 +3,7 @@
 module.exports = {
   name: 'slider',
   template: require('../../templates/components/slider.tpl'),
-  style: require('../../styles/clay/components/slider.scss'),
+  style: require('../../../tmp/slider.css'),
   manipulator: 'slider',
   defaults: {
     label: '',

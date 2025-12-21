@@ -92,6 +92,7 @@ describe('ClayConfig', function() {
     testCapabilities('aplite', 2, 9, ['PLATFORM_CHALK'], 0);
     testCapabilities('aplite', 2, 9, ['PLATFORM_DIORITE'], 0);
     testCapabilities('aplite', 2, 9, ['PLATFORM_EMERY'], 0);
+    testCapabilities('aplite', 2, 9, ['PLATFORM_FLINT'], 0);
 
     testCapabilities('aplite', 3, 10, ['BW'], 1);
     testCapabilities('aplite', 3, 10, ['COLOR'], 0);
@@ -112,6 +113,7 @@ describe('ClayConfig', function() {
     testCapabilities('aplite', 3, 10, ['PLATFORM_CHALK'], 0);
     testCapabilities('aplite', 3, 10, ['PLATFORM_DIORITE'], 0);
     testCapabilities('aplite', 3, 10, ['PLATFORM_EMERY'], 0);
+    testCapabilities('aplite', 3, 10, ['PLATFORM_FLINT'], 0);
 
     testCapabilities('basalt', 3, 10, ['BW'], 0);
     testCapabilities('basalt', 3, 10, ['COLOR'], 1);
@@ -134,6 +136,7 @@ describe('ClayConfig', function() {
     testCapabilities('basalt', 3, 10, ['PLATFORM_CHALK'], 0);
     testCapabilities('basalt', 3, 10, ['PLATFORM_DIORITE'], 0);
     testCapabilities('basalt', 3, 10, ['PLATFORM_EMERY'], 0);
+    testCapabilities('basalt', 3, 10, ['PLATFORM_FLINT'], 0);
 
     testCapabilities('chalk', 3, 10, ['BW'], 0);
     testCapabilities('chalk', 3, 10, ['COLOR'], 1);
@@ -156,6 +159,7 @@ describe('ClayConfig', function() {
     testCapabilities('chalk', 3, 10, ['PLATFORM_CHALK'], 1);
     testCapabilities('chalk', 3, 10, ['PLATFORM_DIORITE'], 0);
     testCapabilities('chalk', 3, 10, ['PLATFORM_EMERY'], 0);
+    testCapabilities('chalk', 3, 10, ['PLATFORM_FLINT'], 0);
 
     testCapabilities('diorite', 3, 10, ['BW'], 1);
     testCapabilities('diorite', 3, 10, ['COLOR'], 0);
@@ -178,6 +182,7 @@ describe('ClayConfig', function() {
     testCapabilities('diorite', 3, 10, ['PLATFORM_CHALK'], 0);
     testCapabilities('diorite', 3, 10, ['PLATFORM_DIORITE'], 1);
     testCapabilities('diorite', 3, 10, ['PLATFORM_EMERY'], 0);
+    testCapabilities('diorite', 3, 10, ['PLATFORM_FLINT'], 0);
 
     testCapabilities('emery', 3, 10, ['BW'], 0);
     testCapabilities('emery', 3, 10, ['COLOR'], 1);
@@ -200,6 +205,30 @@ describe('ClayConfig', function() {
     testCapabilities('emery', 3, 10, ['PLATFORM_CHALK'], 0);
     testCapabilities('emery', 3, 10, ['PLATFORM_DIORITE'], 0);
     testCapabilities('emery', 3, 10, ['PLATFORM_EMERY'], 1);
+    testCapabilities('emery', 3, 10, ['PLATFORM_FLINT'], 0);
+
+    testCapabilities('flint', 3, 10, ['BW'], 1);
+    testCapabilities('flint', 3, 10, ['COLOR'], 0);
+    testCapabilities('flint', 3, 10, ['MICROPHONE'], 1);
+    testCapabilities('flint', 3, 10, ['SMARTSTRAP'], 0);
+    testCapabilities('flint', 3, 4, ['SMARTSTRAP'], 0);
+    testCapabilities('flint', 3, 3, ['SMARTSTRAP'], 0);
+    testCapabilities('flint', 3, 10, ['SMARTSTRAP_POWER'], 0);
+    testCapabilities('flint', 3, 4, ['SMARTSTRAP_POWER'], 0);
+    testCapabilities('flint', 3, 3, ['SMARTSTRAP_POWER'], 0);
+    testCapabilities('flint', 3, 10, ['HEALTH'], 1);
+    testCapabilities('flint', 3, 9, ['HEALTH'], 0);
+    testCapabilities('flint', 3, 10, ['RECT'], 1);
+    testCapabilities('flint', 3, 10, ['ROUND'], 0);
+    testCapabilities('flint', 3, 10, ['DISPLAY_144x168'], 1);
+    testCapabilities('flint', 3, 10, ['DISPLAY_180x180_ROUND'], 0);
+    testCapabilities('flint', 3, 10, ['DISPLAY_200x228'], 0);
+    testCapabilities('flint', 3, 10, ['PLATFORM_APLITE'], 0);
+    testCapabilities('flint', 3, 10, ['PLATFORM_BASALT'], 0);
+    testCapabilities('flint', 3, 10, ['PLATFORM_CHALK'], 0);
+    testCapabilities('flint', 3, 10, ['PLATFORM_DIORITE'], 0);
+    testCapabilities('flint', 3, 10, ['PLATFORM_EMERY'], 0);
+    testCapabilities('flint', 3, 10, ['PLATFORM_FLINT'], 1);
 
     testCapabilities('aplite', 3, 10, ['BW', 'HEALTH'], 0, 0);
     testCapabilities('emery', 3, 10, ['COLOR', 'HEALTH'], 1);

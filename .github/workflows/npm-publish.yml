@@ -1,0 +1,28 @@
+name: Node.js Package
+
+on:
+  release:
+    types: [created]
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  publish-npm:
+    runs-on: ubuntu-latest
+
+    container:
+      image: ghcr.io/pebble-dev/pebbleos-docker:v1
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v7
+      - run: uv tool install pebble-tool
+      - run: npm install
+      - run: npm run build
+      - run: pebble build
+      - name: Update npm
+        run: npm install -g npm@latest
+      - run: npm publish
