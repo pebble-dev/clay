@@ -4,7 +4,7 @@ Thanks for checking out Clay. We accept pull requests from anybody, however we a
 that you follow some conventions when contributing to Clay.
 
 We have set up a
-[piece-of-cake](https://github.com/pebble/clay/issues?q=is%3Aopen+is%3Aissue+label%3Apiece-of-cake)
+[piece-of-cake](https://github.com/pebble-dev/clay/issues?q=is%3Aopen+is%3Aissue+label%3Apiece-of-cake)
 label in GitHub issues for bugs/features that are easy to implement. These issues are
 a great place to start for people that are new to the codebase.
 
@@ -13,7 +13,7 @@ a great place to start for people that are new to the codebase.
 
  - [Node](https://nodejs.org) (4.0 and later)
  - [Google Chrome](www.google.com/chrome) (To run tests)
- - [Pebble SDK](https://developer.pebble.com/sdk/) (optional)
+ - [Pebble SDK](https://developer.rebble.io/sdk/) (optional)
 
 
 ## Getting Started
@@ -192,7 +192,7 @@ adhering to the style guide.
 
 ## Getting Help
 
- - Chat to us in the `#clay` channel on slack. http://slack.pbldev.io/
- - Visit the [Pebble Forums](https://forums.pebble.com/)
- - Tweet at [@pebbledev](https://twitter.com/pebbledev)
- - More options at https://developer.pebble.com/community/online/
+ - Chat to us in the `#app-dev` channel on Discord. https://discordapp.com/invite/aRUAYFN
+ - Visit the [Rebble Forums](https://forum.rebble.io/)
+ - Skeet at [@rebble.io](https://bsky.app/profile/rebble.io)
+ - More options at https://developer.rebble.io/community/online/

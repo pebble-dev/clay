@@ -27,7 +27,7 @@ var autoprefixerOptions = {
 };
 
 var stringifyOptions = ['.html', '.tpl', '.css'];
-var versionMessage = '/* Clay - https://github.com/pebble/clay - Version: ' +
+var versionMessage = '/* Clay - https://github.com/pebble-dev/clay - Version: ' +
                      clayPackage.version +
                      ' - Build Date: ' + new Date().toISOString() + ' */\n';
 

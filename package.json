@@ -1,6 +1,6 @@
 {
-  "name": "pebble-clay",
-  "version": "1.0.4",
+  "name": "@rebble/clay",
+  "version": "1.0.5",
   "description": "Pebble Config Framework",
   "scripts": {
     "test-travis": "./node_modules/.bin/gulp && ./node_modules/.bin/karma start ./test/karma.conf.js --single-run --browsers chromeTravisCI",
@@ -15,7 +15,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/pebble/clay.git"
+    "url": "git+https://github.com/pebble-dev/clay.git"
   },
   "keywords": [
     "pebble",
@@ -26,7 +26,7 @@
   "author": "Pebble Technology",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/pebble/clay/issues"
+    "url": "https://github.com/pebble-dev/clay/issues"
   },
   "pebble": {
     "projectType": "package",
@@ -46,7 +46,7 @@
       "configurable"
     ]
   },
-  "homepage": "https://github.com/pebble/clay#readme",
+  "homepage": "https://github.com/pebble-dev/clay#readme",
   "devDependencies": {
     "autoprefixer": "^10.4.22",
     "bourbon": "^4.2.6",
