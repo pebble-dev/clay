@@ -86,6 +86,6 @@
     "tosource": "^1.0.0",
     "vinyl-buffer": "^1.0.0",
     "vinyl-source-stream": "^2.0.0",
-    "watchify": "^3.7.0"
+    "watchify": "^3.11.1"
   }
 }
