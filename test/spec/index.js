@@ -409,6 +409,8 @@ describe('Clay', function() {
     it('it writes to localStorage when passing a key and a value',
       function() {
         var clay = fixture.clay([]);
+        clay.meta.watchToken = '0123456789abcdef0123456789abcdef';
+
         var expected = {
           key1: 'value1',
           key2: 'value2%7Dbreaks'
@@ -419,7 +421,37 @@ describe('Clay', function() {
         assert.equal(localStorage.getItem('clay-settings'),
           JSON.stringify(expected)
         );
+
+        assert.equal(
+            localStorage.getItem('clay-watch-0123456789abcdef0123456789abcdef'),
+            null);
       });
+
+    it('it writes watch specific keys to a separate localStorage item as well',
+        function() {
+
+          var clay = fixture.clay([{messageKey: 'key1', persistPerWatch: true}]);
+          clay.meta.watchToken = '0123456789abcdef0123456789abcdef';
+
+          var expectedAllSettings = {
+            key1: 'value1',
+            key2: 'value2%7Dbreaks'
+          };
+
+          var expectedWatchSettings = {
+            key1: 'value1'
+          };
+
+          clay.setSettings('key1', 'value1');
+          clay.setSettings('key2', 'value2%7Dbreaks');
+          assert.equal(localStorage.getItem('clay-settings'),
+              JSON.stringify(expectedAllSettings)
+          );
+
+          assert.equal(
+              localStorage.getItem('clay-watch-0123456789abcdef0123456789abcdef'),
+              JSON.stringify(expectedWatchSettings));
+        });
 
     it('doesn\'t throw and logs an error if settings in localStorage are broken',
       function() {
