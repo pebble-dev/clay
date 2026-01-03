@@ -139,44 +139,40 @@ function Clay(config, customFn, options) {
 
 Clay.prototype._getStoredSettings = function() {
   var self = this;
-  var settings = {};
+  var globalSettings = {};
   var watchSpecificSettings = {};
+  var watchStorageKey = 'clay-watch-' + (self.meta.watchToken || 'default');
 
   try {
-    settings = JSON.parse(localStorage.getItem('clay-settings')) || {};
-    if (self.meta.watchToken) {
-      watchSpecificSettings = JSON.parse(
-          localStorage.getItem('clay-watch-' + self.meta.watchToken)
-      ) || {};
-    }
+    globalSettings = JSON.parse(localStorage.getItem('clay-settings')) || {};
+    watchSpecificSettings = JSON.parse(localStorage.getItem(watchStorageKey)) || {};
   } catch (e) {
     console.error(e.toString());
   }
 
-  Object.keys(watchSpecificSettings).forEach(function(key) {
-    if (self.watchSpecificKeys.includes(key)) {
-      settings[key] = watchSpecificSettings[key];
-    }
-  });
-
-  return settings;
+  return Object.assign({}, globalSettings, watchSpecificSettings);
 };
 
 Clay.prototype._setStoredSettings = function(settings) {
   var self = this;
+  var globalSettings = {};
   var watchSpecificSettings = {};
+  var watchStorageKey = 'clay-watch-' + (self.meta.watchToken || 'default');
 
-  if (self.meta.watchToken) {
+  if (self.watchSpecificKeys.length) {
     Object.keys(settings).forEach(function(key) {
       if (self.watchSpecificKeys.includes(key)) {
         watchSpecificSettings[key] = settings[key];
+      } else {
+        globalSettings[key] = settings[key];
       }
     });
-
-    localStorage.setItem('clay-watch-' + this.meta.watchToken,
-        JSON.stringify(watchSpecificSettings));
+  } else {
+    globalSettings = settings;
   }
-  localStorage.setItem('clay-settings', JSON.stringify(settings));
+
+  localStorage.setItem(watchStorageKey, JSON.stringify(watchSpecificSettings));
+  localStorage.setItem('clay-settings', JSON.stringify(globalSettings));
 };
 
 /**

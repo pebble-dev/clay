@@ -424,7 +424,7 @@ describe('Clay', function() {
 
         assert.equal(
             localStorage.getItem('clay-watch-0123456789abcdef0123456789abcdef'),
-            null);
+            JSON.stringify({}));
       });
 
     it('it writes watch specific keys to a separate localStorage item as well',
@@ -433,8 +433,7 @@ describe('Clay', function() {
           var clay = fixture.clay([{messageKey: 'key1', persistPerWatch: true}]);
           clay.meta.watchToken = '0123456789abcdef0123456789abcdef';
 
-          var expectedAllSettings = {
-            key1: 'value1',
+          var expectedGlobalSettings = {
             key2: 'value2%7Dbreaks'
           };
 
@@ -445,7 +444,7 @@ describe('Clay', function() {
           clay.setSettings('key1', 'value1');
           clay.setSettings('key2', 'value2%7Dbreaks');
           assert.equal(localStorage.getItem('clay-settings'),
-              JSON.stringify(expectedAllSettings)
+              JSON.stringify(expectedGlobalSettings)
           );
 
           assert.equal(
