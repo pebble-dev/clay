@@ -141,7 +141,7 @@ Clay.prototype._getStoredSettings = function() {
   var self = this;
   var globalSettings = {};
   var watchSpecificSettings = {};
-  var watchStorageKey = 'clay-watch-' + (self.meta.watchToken || 'default');
+  var watchStorageKey = 'clay-watch-' + (self.meta.watchToken || 'fallback');
 
   try {
     globalSettings = JSON.parse(localStorage.getItem('clay-settings')) || {};
@@ -157,7 +157,7 @@ Clay.prototype._setStoredSettings = function(settings) {
   var self = this;
   var globalSettings = {};
   var watchSpecificSettings = {};
-  var watchStorageKey = 'clay-watch-' + (self.meta.watchToken || 'default');
+  var watchStorageKey = 'clay-watch-' + (self.meta.watchToken || 'fallback');
 
   if (self.watchSpecificKeys.length) {
     Object.keys(settings).forEach(function(key) {
