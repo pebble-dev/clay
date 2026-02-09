@@ -456,6 +456,50 @@ describe('component - color', function() {
         suffix: ''
       }
     });
+    testAutoLayout('emery', standardLayouts.COLOR, true, '', {
+      platform: 'emery',
+      model: 'qemu_platform_emery',
+      language: 'en_US',
+      firmware: {
+        major: 4,
+        minor: 0,
+        patch: 0,
+        suffix: ''
+      }
+    });
+    testAutoLayout('flint', standardLayouts.BLACK_WHITE, false, '', {
+      platform: 'flint',
+      model: 'qemu_platform_flint',
+      language: 'en_US',
+      firmware: {
+        major: 4,
+        minor: 0,
+        patch: 0,
+        suffix: ''
+      }
+    });
+    testAutoLayout('flint', standardLayouts.GRAY, true, '', {
+      platform: 'flint',
+      model: 'qemu_platform_flint',
+      language: 'en_US',
+      firmware: {
+        major: 4,
+        minor: 0,
+        patch: 0,
+        suffix: ''
+      }
+    });
+    testAutoLayout('gabbro', standardLayouts.COLOR, true, '', {
+      platform: 'gabbro',
+      model: 'qemu_platform_gabbro',
+      language: 'en_US',
+      firmware: {
+        major: 4,
+        minor: 0,
+        patch: 0,
+        suffix: ''
+      }
+    });
 
     testCustomLayout();
     testCustomLayout('COLOR');
