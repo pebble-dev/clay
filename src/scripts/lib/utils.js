@@ -49,18 +49,23 @@ module.exports.capabilityMap = {
     minFwMajor: 0,
     minFwMinor: 0
   },
+  PLATFORM_GABBRO: {
+    platforms: ['gabbro'],
+    minFwMajor: 0,
+    minFwMinor: 0
+  },
   BW: {
     platforms: ['aplite', 'diorite', 'flint'],
     minFwMajor: 0,
     minFwMinor: 0
   },
   COLOR: {
-    platforms: ['basalt', 'chalk', 'emery'],
+    platforms: ['basalt', 'chalk', 'emery', 'gabbro'],
     minFwMajor: 0,
     minFwMinor: 0
   },
   MICROPHONE: {
-    platforms: ['basalt', 'chalk', 'diorite', 'emery', 'flint'],
+    platforms: ['basalt', 'chalk', 'diorite', 'emery', 'flint', 'gabbro'],
     minFwMajor: 0,
     minFwMinor: 0
   },
@@ -75,7 +80,7 @@ module.exports.capabilityMap = {
     minFwMinor: 4
   },
   HEALTH: {
-    platforms: ['basalt', 'chalk', 'diorite', 'emery', 'flint'],
+    platforms: ['basalt', 'chalk', 'diorite', 'emery', 'flint', 'gabbro'],
     minFwMajor: 3,
     minFwMinor: 10
   },
@@ -85,7 +90,7 @@ module.exports.capabilityMap = {
     minFwMinor: 0
   },
   ROUND: {
-    platforms: ['chalk'],
+    platforms: ['chalk', 'gabbro'],
     minFwMajor: 0,
     minFwMinor: 0
   },
@@ -101,6 +106,11 @@ module.exports.capabilityMap = {
   },
   DISPLAY_200x228: {
     platforms: ['emery'],
+    minFwMajor: 0,
+    minFwMinor: 0
+  },
+  DISPLAY_260x260_ROUND: {
+    platforms: ['gabbro'],
     minFwMajor: 0,
     minFwMinor: 0
   }

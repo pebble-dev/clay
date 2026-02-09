@@ -336,8 +336,8 @@ A color picker that allows users to choose a color from the ones that are compat
 The color picker will automatically show a different layout depending on the watch connected: 
 
  - Aplite (Firmware 2.x) - Black and white
- - Aplite (Firmware 3.x) - Black and white. Will also include gray (`#AAAAAA`) if `allowGray` is set to `true`
- - Basalt/chalk - The 64 colors compatible with color Pebble smartwatches. 
+ - Aplite/Diorite/Flint (Firmware 3.x) - Black and white. Will also include gray (`#AAAAAA`) if `allowGray` is set to `true`
+ - Basalt/Chalk/Emery/Gabbro - The 64 colors compatible with color Pebble smartwatches.
 
 ##### Properties
 
@@ -665,6 +665,7 @@ Below is the full list of capabilities
 | PLATFORM_DIORITE | Running on Pebble 2 |
 | PLATFORM_EMERY | Running on Core Time 2. |
 | PLATFORM_FLINT | Running on Core 2 Duo. |
+| PLATFORM_GABBRO | Running on Core Time Round 2 |
 | BW | Running on hardware that supports only black and white. |
 | COLOR | Running on hardware that supports 64 colors. |
 | MICROPHONE | Running on hardware that includes a microphone. |
