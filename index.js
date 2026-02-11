@@ -41,6 +41,7 @@ function Clay(config, customFn, options) {
     userData: {}
   };
   self.version = version;
+  self.watchSpecificKeys = [];
 
   /**
    * Populate the meta with data from the Pebble object. Make sure to run this inside
@@ -120,7 +121,14 @@ function Clay(config, customFn, options) {
     self.registerComponent(standardComponents[item.type]);
   });
 
-  // validate config against teh use of appKeys
+  // extract watch specific keys
+  _scanConfig(self.config, function(item) {
+    return item.persistPerWatch === true;
+  }, function(item) {
+    self.watchSpecificKeys.push(item.messageKey);
+  });
+
+  // validate config against the use of appKeys
   _scanConfig(self.config, function(item) {
     return item.appKey;
   }, function() {
@@ -128,6 +136,44 @@ function Clay(config, customFn, options) {
                     'Please follow the migration guide to upgrade your project');
   });
 }
+
+Clay.prototype._getStoredSettings = function() {
+  var self = this;
+  var globalSettings = {};
+  var watchSpecificSettings = {};
+  var watchStorageKey = 'clay-watch-' + (self.meta.watchToken || 'fallback');
+
+  try {
+    globalSettings = JSON.parse(localStorage.getItem('clay-settings')) || {};
+    watchSpecificSettings = JSON.parse(localStorage.getItem(watchStorageKey)) || {};
+  } catch (e) {
+    console.error(e.toString());
+  }
+
+  return Object.assign({}, globalSettings, watchSpecificSettings);
+};
+
+Clay.prototype._setStoredSettings = function(settings) {
+  var self = this;
+  var globalSettings = {};
+  var watchSpecificSettings = {};
+  var watchStorageKey = 'clay-watch-' + (self.meta.watchToken || 'fallback');
+
+  if (self.watchSpecificKeys.length) {
+    Object.keys(settings).forEach(function(key) {
+      if (self.watchSpecificKeys.includes(key)) {
+        watchSpecificSettings[key] = settings[key];
+      } else {
+        globalSettings[key] = settings[key];
+      }
+    });
+  } else {
+    globalSettings = settings;
+  }
+
+  localStorage.setItem(watchStorageKey, JSON.stringify(watchSpecificSettings));
+  localStorage.setItem('clay-settings', JSON.stringify(globalSettings));
+};
 
 /**
  * Register a component to Clay.
@@ -150,15 +196,9 @@ Clay.prototype.registerComponent = function(component) {
  * @return {string}
  */
 Clay.prototype.generateUrl = function() {
-  var settings = {};
+  var settings = this._getStoredSettings();
   var emulator = !Pebble || Pebble.platform === 'pypkjs';
   var returnTo = emulator ? '$$$RETURN_TO$$$' : 'pebblejs://close#';
-
-  try {
-    settings = JSON.parse(localStorage.getItem('clay-settings')) || {};
-  } catch (e) {
-    console.error(e.toString());
-  }
 
   var compiledHtml = configPageHtml
     .replace('$$RETURN_TO$$', returnTo)
@@ -208,7 +248,7 @@ Clay.prototype.getSettings = function(response, convert) {
     }
   });
 
-  localStorage.setItem('clay-settings', JSON.stringify(settingsStorage));
+  this._setStoredSettings(settingsStorage);
 
   return convert === false ? settings : Clay.prepareSettingsForAppMessage(settings);
 };
@@ -226,13 +266,7 @@ Clay.prototype.getSettings = function(response, convert) {
  * @return {undefined}
  */
 Clay.prototype.setSettings = function(key, value) {
-  var settingsStorage = {};
-
-  try {
-    settingsStorage = JSON.parse(localStorage.getItem('clay-settings')) || {};
-  } catch (e) {
-    console.error(e.toString());
-  }
+  var settingsStorage = this._getStoredSettings();
 
   if (typeof key === 'object') {
     var settings = key;
@@ -243,7 +277,7 @@ Clay.prototype.setSettings = function(key, value) {
     settingsStorage[key] = value;
   }
 
-  localStorage.setItem('clay-settings', JSON.stringify(settingsStorage));
+  this._setStoredSettings(settingsStorage);
 };
 
 /**
