@@ -22,6 +22,7 @@ jobs:
       - run: uv tool install pebble-tool
       - run: npm install
       - run: npm run build
+      - run: pebble sdk install 4.9.127
       - run: pebble build
       - name: Update npm
         run: npm install -g npm@latest
