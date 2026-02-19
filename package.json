@@ -81,7 +81,7 @@
     "postcss": "^8.5.6",
     "require-from-string": "^2.0.2",
     "sass": "^1.94.2",
-    "sinon": "^1.17.3",
+    "sinon": "^21.0.1",
     "stringify": "^3.2.0",
     "through": "^2.3.8",
     "tosource": "^1.0.0",
