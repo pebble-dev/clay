@@ -54,7 +54,7 @@
     "browserify": "^13.0.0",
     "browserify-istanbul": "^3.0.1",
     "chai": "^3.4.1",
-    "deamdify": "^0.2.0",
+    "deamdify": "^0.3.0",
     "deepcopy": "^0.6.1",
     "del": "^2.0.2",
     "eslint": "^1.5.1",
