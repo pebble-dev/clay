@@ -173,6 +173,7 @@ Standard text input field.
 | attributes | object | An object containing HTML attributes to set on the input field. Set `type` to values such as "email", "time", "date" etc to adjust the behavior of the component. |
 | capabilities | array | Array of features that the connected watch must have for this item to be present |
 | group | string | Set this to allow this item, along with other items sharing the same group to be looked up using `Clay.getItemsByGroup()` in your [custom function](#custom-function) |
+| persistPerWatch | boolean | Optional. If set to `true`, the selected value will be stored separately for each watch model. Defaults to `false`. |                                                                                                                                                                                                           |
 
 
 ##### Example
@@ -211,6 +212,7 @@ Switch for a single item.
 | description | string | Optional sub-text to include below the component |
 | capabilities | array | Array of features that the connected watch must have for this item to be present |
 | group | string | Set this to allow this item, along with other items sharing the same group to be looked up using `Clay.getItemsByGroup()` in your [custom function](#custom-function) |
+| persistPerWatch | boolean | Optional. If set to `true`, the selected value will be stored separately for each watch model. Defaults to `false`. |                                                                                                                                                                                                           |
 
 
 ##### Example
@@ -245,6 +247,7 @@ A dropdown menu containing multiple options.
 | options | array of objects | The options you want to appear in the dropdown menu. Each option is an object with a `label` and `value` property. |
 | capabilities | array | Array of features that the connected watch must have for this item to be present |
 | group | string | Set this to allow this item, along with other items sharing the same group to be looked up using `Clay.getItemsByGroup()` in your [custom function](#custom-function) |
+| persistPerWatch | boolean | Optional. If set to `true`, the selected value will be stored separately for each watch model. Defaults to `false`. |                                                                                                                                                                                                           |
 
 ##### Example
 
@@ -354,6 +357,7 @@ The color picker will automatically show a different layout depending on the wat
 | allowGray | boolean | Optional. Set this to `true` to include gray (`#AAAAAA`) in the color picker for aplite running on firmware 3 and above. This is optional because only a subset of the drawing operations support gray on aplite. Defaults to `false` |
 | capabilities | array | Array of features that the connected watch must have for this item to be present |
 | group | string | Set this to allow this item, along with other items sharing the same group to be looked up using `Clay.getItemsByGroup()` in your [custom function](#custom-function) |
+| persistPerWatch | boolean | Optional. If set to `true`, the selected value will be stored separately for each watch model. Defaults to `false`. |                                                                                                                                                                                                           |
 
 ##### Example
 
@@ -419,6 +423,7 @@ A list of options allowing the user can only choose one option to submit.
 | options | array of objects | The options you want to appear in the radio group. Each option is an object with a `label` and `value` property. |
 | capabilities | array | Array of features that the connected watch must have for this item to be present |
 | group | string | Set this to allow this item, along with other items sharing the same group to be looked up using `Clay.getItemsByGroup()` in your [custom function](#custom-function) |
+| persistPerWatch | boolean | Optional. If set to `true`, the selected value will be stored separately for each watch model. Defaults to `false`. |                                                                                                                                                                                                           |
 
 ##### Example
 
@@ -465,6 +470,7 @@ A list of options where a user may choose more than one option to submit.
 | options | array of strings | The labels for each checkbox you want to appear in the checkbox group. |
 | capabilities | array | Array of features that the connected watch must have for this item to be present |
 | group | string | Set this to allow this item, along with other items sharing the same group to be looked up using `Clay.getItemsByGroup()` in your [custom function](#custom-function) |
+| persistPerWatch | boolean | Optional. If set to `true`, the selected value will be stored separately for each watch model. Defaults to `false`. |                                                                                                                                                                                                           |
 
 ##### Example
 
@@ -497,6 +503,7 @@ In the above example, Sushi and Burgers will be selected by default.
 | description | string | Optional sub-text to include below the component |
 | capabilities | array | Array of features that the connected watch must have for this item to be present |
 | group | string | Set this to allow this item, along with other items sharing the same group to be looked up using `Clay.getItemsByGroup()` in your [custom function](#custom-function) |
+| persistPerWatch | boolean | Optional. If set to `true`, the selected value will be stored separately for each watch model. Defaults to `false`. |                                                                                                                                                                                                           |
 
 ##### Example
 
@@ -536,6 +543,7 @@ you must just remember to divide the received value on the watch accordingly.
 | description | string | Optional sub-text to include below the component |
 | capabilities | array | Array of features that the connected watch must have for this item to be present |
 | group | string | Set this to allow this item, along with other items sharing the same group to be looked up using `Clay.getItemsByGroup()` in your [custom function](#custom-function) |
+| persistPerWatch | boolean | Optional. If set to `true`, the selected value will be stored separately for each watch model. Defaults to `false`. |                                                                                                                                                                                                           |
 
 ##### Example
 
