@@ -121,7 +121,8 @@ export declare interface SelectComponent<T extends string>
   type: "select";
   defaultValue: T;
   label: string;
-  options: Option<T> | OptionGroup<T>;
+  options: (Option<T> | OptionGroup<T>)[];
+  attributes?: Partial<FilterScalar<HTMLSelectElement>>;
   description?: string;
 }
 
@@ -139,9 +140,9 @@ export declare interface ColorComponent
 export declare interface RadioGroupComponent<T extends string>
   extends BaseComponent, PebbleAttributes {
   type: "radiogroup";
-  defaultValue: T;
+  defaultValue?: T;
   label: string;
-  options: Option<T>;
+  options: Option<T>[];
   description?: string;
 }
 
