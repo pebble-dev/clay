@@ -1,6 +1,9 @@
 'use strict';
 /* eslint-disable quotes */
 
+/**
+ * @type {import("..").Config}
+ */
 module.exports = [
   {
     "type": "heading",
