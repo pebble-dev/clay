@@ -119,10 +119,10 @@ export declare interface ToggleComponent
 export declare interface SelectComponent<T extends string>
   extends BaseComponent, PebbleAttributes {
   type: "select";
-  defaultValue: T;
   label: string;
   options: (Option<T> | OptionGroup<T>)[];
   attributes?: Partial<FilterScalar<HTMLSelectElement>>;
+  defaultValue?: T;
   description?: string;
 }
 
@@ -140,9 +140,9 @@ export declare interface ColorComponent
 export declare interface RadioGroupComponent<T extends string>
   extends BaseComponent, PebbleAttributes {
   type: "radiogroup";
-  defaultValue?: T;
   label: string;
   options: Option<T>[];
+  defaultValue?: T;
   description?: string;
 }
 
@@ -158,9 +158,9 @@ export declare interface CheckboxComponent
 
 export declare interface ButtonComponent extends BaseComponent {
   type: "button";
-  defaultValue: string;
   id?: string;
   capabilities?: Capabilities[];
+  defaultValue?: string;
   description?: string;
   group?: string;
   primary?: boolean;
@@ -169,10 +169,10 @@ export declare interface ButtonComponent extends BaseComponent {
 export declare interface SliderComponent
   extends BaseComponent, PebbleAttributes {
   type: "slider";
-  defaultValue: number;
   label: string;
   min: number;
   max: number;
+  defaultValue?: number;
   description?: string;
   step?: number;
 }
