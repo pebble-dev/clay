@@ -215,12 +215,12 @@ export declare function CustomFunction<M extends object = {}>(
 export declare class Clay<M extends object = {}> {
   constructor(
     config: Config,
-    customFn: CustomFunction<M>,
+    customFn: typeof CustomFunction<M>,
     options: ClayOptions<M>,
   );
   version: string;
   config: Config;
-  customFn: CustomFunction<M>;
+  customFn: typeof CustomFunction<M>;
   /**
    * This will only be populated in the showConfiguration event handler.
    */
