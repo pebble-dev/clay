@@ -200,7 +200,7 @@ export declare type Block =
   | SliderComponent
   | SubmitComponent;
 
-export declare type Config = Block[];
+export declare type ClayUserConfig = Block[];
 
 export default interface ClayOptions<M extends object = {}> {
   autoHandleEvents: boolean;
@@ -215,12 +215,12 @@ export declare function CustomFunction<M extends object = {}>(
 
 export declare class Clay<M extends object = {}> {
   constructor(
-    config: Config,
+    config: ClayUserConfig,
     customFn: typeof CustomFunction<M>,
     options: ClayOptions<M>,
   );
   version: string;
-  config: Config;
+  config: ClayUserConfig;
   customFn: typeof CustomFunction<M>;
   /**
    * This will only be populated in the showConfiguration event handler.
