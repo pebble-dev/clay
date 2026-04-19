@@ -1,43 +1,45 @@
 'use strict';
 
-var componentRegistry = require('./component-registry');
-var minified = require('../vendor/minified');
-var utils = require('../lib/utils');
-var ClayEvents = require('./clay-events');
+import componentRegistry = require('./component-registry');
+import minified = require('../vendor/minified');
+import utils = require('../lib/utils');
+import ClayEvents = require('./clay-events');
 
-var _ = minified._;
-var HTML = minified.HTML;
+const _ = minified._;
+const HTML = minified.HTML;
+
+interface ClayConfigItem {
+  type: string;
+  id?: string;
+  messageKey?: string;
+  [key: string]: unknown;
+}
 
 /**
- * @extends ClayEvents
- * @param {Clay~ConfigItem} config
- * @constructor
+ * Represents a configurable item in Clay. Initialises with the component
+ * type, attaches event methods via ClayEvents mixin, and binds manipulator methods.
+ * Extends ClayEvents for on/off/trigger event handling.
  */
-function ClayItem(config) {
-  var self = this;
+function ClayItem(this: any, config: ClayConfigItem) {
+  const self = this;
 
-  var _component = componentRegistry[config.type];
+  const _component = componentRegistry[config.type];
 
   if (!_component) {
     throw new Error('The component: ' + config.type + ' is not registered. ' +
                     'Make sure to register it with ClayConfig.registerComponent()');
   }
 
-  var _templateData = _.extend({}, _component.defaults || {}, config);
+  const _templateData = _.extend({}, _component.defaults || {}, config);
 
-  /** @type {string|null} */
   self.id = config.id || null;
 
-  /** @type {string|null} */
   self.messageKey = config.messageKey || null;
 
-  /** @type {Object} */
   self.config = config;
 
-  /** @type {M} */
   self.$element = HTML(_component.template.trim(), _templateData);
 
-  /** @type {M} */
   self.$manipulatorTarget = self.$element.select('[data-manipulator-target]');
 
   // this caters for situations where the manipulator target is the root element
@@ -46,12 +48,10 @@ function ClayItem(config) {
   }
 
   /**
-   * Run the initializer if it exists and attaches the css to the head.
-   * Passes minified as the first param
-   * @param {ClayConfig} clay
-   * @returns {ClayItem}
+   * Run the initialiser if it exists and attaches the css to the head.
+   * Passes minified as the first param.
    */
-  self.initialize = function(clay) {
+  self.initialize = function(clay: unknown) {
     if (typeof _component.initialize === 'function') {
       _component.initialize.call(self, minified, clay);
     }
@@ -62,7 +62,7 @@ function ClayItem(config) {
   ClayEvents.call(self, self.$manipulatorTarget);
 
   // attach the manipulator methods to the clayItem
-  _.eachObj(_component.manipulator, function(methodName, method) {
+  _.eachObj(_component.manipulator, function(methodName: string, method: Function) {
     self[methodName] = method.bind(self);
   });
 
@@ -70,4 +70,4 @@ function ClayItem(config) {
   utils.updateProperties(self, { writable: false, configurable: false });
 }
 
-module.exports = ClayItem;
+export = ClayItem;
