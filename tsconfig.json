@@ -5,7 +5,6 @@
     "moduleResolution": "node10",
     "ignoreDeprecations": "6.0",
     "strict": true,
-    "allowJs": true,
     "noEmit": true,
     "esModuleInterop": true,
     "sourceMap": true,
@@ -16,9 +15,7 @@
   },
   "include": [
     "index.ts",
-    "src/scripts/**/*.js",
     "src/scripts/**/*.ts",
-    "test/**/*.js",
     "test/**/*.ts",
     "types/**/*.d.ts"
   ],
