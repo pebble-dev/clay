@@ -26,9 +26,13 @@ export interface ClayConfigItem {
 /** Watch info from the Pebble API */
 export interface ActiveWatchInfo {
   platform: string;
+  model?: string;
+  language?: string;
   firmware: {
     major: number;
     minor: number;
+    patch?: number;
+    suffix?: string;
   };
 }
 

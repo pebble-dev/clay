@@ -11,6 +11,7 @@ declare module '*.css' {
   export default content;
 }
 
-// Ambient require for dynamic browserify imports (components, templates, JSON)
-// Returns unknown since the actual type depends on the browserify transform.
-declare function require(name: string): unknown;
+// Ambient require for browserify-resolved assets.
+// Returns string because the primary use is for .tpl and .css files
+// stringified at bundle time. For typed modules, use import = require().
+declare function require(name: string): string;

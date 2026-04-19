@@ -402,4 +402,18 @@ Clay.prepareSettingsForAppMessage = function(settings: Record<string, unknown>):
   return result;
 };
 
-export = Clay;
+function createClay(
+  config: ClayConfigItem[],
+  customFn?: ((this: unknown) => void) | null,
+  options?: ClayOptions
+): ClayInstance {
+  const instance: ClayInstance = Object.create(Clay.prototype);
+  Clay.call(instance, config, customFn, options);
+  return instance;
+}
+
+createClay.encodeDataUri = Clay.encodeDataUri;
+createClay.prepareForAppMessage = Clay.prepareForAppMessage;
+createClay.prepareSettingsForAppMessage = Clay.prepareSettingsForAppMessage;
+
+export = createClay;

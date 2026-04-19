@@ -10,6 +10,7 @@
     "esModuleInterop": true,
     "sourceMap": true,
     "skipLibCheck": true,
+    "types": ["mocha", "chai", "sinon"],
     "typeRoots": ["./types", "./node_modules/@types"],
     "baseUrl": "."
   },

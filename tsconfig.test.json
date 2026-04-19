@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "strict": false,
+    "noImplicitAny": false
+  },
+  "include": [
+    "test/**/*.ts",
+    "types/**/*.d.ts"
+  ],
+  "exclude": [
+    "test/type-checks.ts"
+  ]
+}
