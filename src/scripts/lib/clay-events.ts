@@ -1,101 +1,100 @@
 'use strict';
 
-var $ = require('../vendor/minified').$;
-var _ = require('../vendor/minified')._;
+import minified = require('../vendor/minified');
+const $ = minified.$;
+const _ = minified._;
+
+type MinifiedStatic = typeof minified.$;
+type MinifiedUtils = typeof minified._;
+type M = ReturnType<MinifiedStatic>;
+
+interface EventProxy {
+  handler: Function;
+  proxy: Function;
+}
 
 /**
  * Attaches event methods to the context.
  * Call with ClayEvents.call(yourObject, $eventTarget)
- * @param {EventEmitter|M} $eventTarget - An object that will be used as the event
- * target. Must implement EventEmitter
- * @constructor
  */
-function ClayEvents($eventTarget) {
-  var self = this;
-  var _eventProxies = [];
+function ClayEvents(this: unknown, $eventTarget: M) {
+  const self = this as any;
+  const _eventProxies: Array<EventProxy> = [];
 
   /**
-   * prefixes events with "|"
-   * @param {string} events
-   * @returns {string}
-   * @private
+   * Prefixes events with "|"
    */
-  function _transformEventNames(events) {
+  function _transformEventNames(events: string): string {
     return events.split(' ').map(function(event) {
       return '|' + event.replace(/^\|/, '');
     }).join(' ');
   }
 
   /**
-   * @param {function} handler
-   * @param {function} proxy
-   * @returns {function}
-   * @private
+   * Register or retrieve a proxy for the given handler.
    */
-  function _registerEventProxy(handler, proxy) {
-    var eventProxy = _.find(_eventProxies, function(item) {
+  function _registerEventProxy(handler: Function, proxy: Function): Function {
+    const eventProxy = _.find(_eventProxies, function(item) {
       return item.handler === handler ? item : null;
     });
 
     if (!eventProxy) {
-      eventProxy = { handler: handler, proxy: proxy };
-      _eventProxies.push(eventProxy);
+      const newProxy: EventProxy = { handler: handler, proxy: proxy };
+      _eventProxies.push(newProxy);
+      return proxy;
     }
     return eventProxy.proxy;
   }
 
   /**
-   * @param {function} handler
-   * @returns {function}
-   * @private
+   * Retrieve the proxy function for the given handler.
    */
-  function _getEventProxy(handler) {
-    return _.find(_eventProxies, function(item) {
-      return item.handler === handler ? item.proxy : null;
+  function _getEventProxy(handler: Function): Function | undefined {
+    var eventProxy = _.find(_eventProxies, function(item) {
+      return item.handler === handler ? item : null;
     });
+    return eventProxy ? eventProxy.proxy : undefined;
   }
 
   /**
    * Attach an event listener to the item.
-   * @param {string} events - a space separated list of events
-   * @param {function} handler
-   * @returns {ClayEvents}
+   * @param events - a space separated list of events
+   * @param handler - the event handler function
+   * @returns the context object for chaining
    */
-  self.on = function(events, handler) {
-    var _events = _transformEventNames(events);
-    var self = this;
-    var _proxy = _registerEventProxy(handler, function() {
+  self.on = function(events: string, handler: Function) {
+    const _events = _transformEventNames(events);
+    const _proxy = _registerEventProxy(handler, function(this: unknown) {
       handler.apply(self, arguments);
     });
-    $eventTarget.on(_events, _proxy);
+    $eventTarget.on(_events, _proxy as (...args: unknown[]) => void);
     return self;
   };
 
   /**
    * Remove the given event handler. NOTE: This will remove the handler from all
-   * registered events
-   * @param {function} handler
-   * @returns {ClayEvents}
+   * registered events.
+   * @param handler - the event handler function to remove
+   * @returns the context object for chaining
    */
-  self.off = function(handler) {
-    var _proxy = _getEventProxy(handler);
+  self.off = function(handler: Function) {
+    const _proxy = _getEventProxy(handler);
     if (_proxy) {
-      $.off(_proxy);
+      $.off(_proxy as (...args: unknown[]) => void);
     }
     return self;
   };
 
   /**
    * Trigger an event.
-   * @param {string} name - a single event name to trigger
-   * @param {Object} [eventObj] - an object to pass to the event handler,
-   * provided the handler does not have custom arguments.
-   * @returns {ClayEvents}
+   * @param name - a single event name to trigger
+   * @param eventObj - an optional object to pass to the event handler
+   * @returns the context object for chaining
    */
-  self.trigger = function(name, eventObj) {
+  self.trigger = function(name: string, eventObj?: unknown) {
     $eventTarget.trigger(name, eventObj);
     return self;
   };
 }
 
-module.exports = ClayEvents;
+export = ClayEvents;
