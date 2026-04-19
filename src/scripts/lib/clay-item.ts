@@ -4,23 +4,17 @@ import componentRegistry = require('./component-registry');
 import minified = require('../vendor/minified');
 import utils = require('../lib/utils');
 import ClayEvents = require('./clay-events');
+import { ClayItemInstance, ClayConfigItem, ClayConfigInstance } from './types';
 
 const _ = minified._;
 const HTML = minified.HTML;
-
-interface ClayConfigItem {
-  type: string;
-  id?: string;
-  messageKey?: string;
-  [key: string]: unknown;
-}
 
 /**
  * Represents a configurable item in Clay. Initialises with the component
  * type, attaches event methods via ClayEvents mixin, and binds manipulator methods.
  * Extends ClayEvents for on/off/trigger event handling.
  */
-function ClayItem(this: any, config: ClayConfigItem) {
+function ClayItem(this: ClayItemInstance, config: ClayConfigItem) {
   const self = this;
 
   const _component = componentRegistry[config.type];
@@ -51,7 +45,7 @@ function ClayItem(this: any, config: ClayConfigItem) {
    * Run the initialiser if it exists and attaches the css to the head.
    * Passes minified as the first param.
    */
-  self.initialize = function(clay: unknown) {
+  self.initialize = function(clay: ClayConfigInstance) {
     if (typeof _component.initialize === 'function') {
       _component.initialize.call(self, minified, clay);
     }
@@ -72,4 +66,12 @@ function ClayItem(this: any, config: ClayConfigItem) {
   utils.updateProperties(self, { writable: false, configurable: false });
 }
 
-export = ClayItem;
+function createClayItem(config: ClayConfigItem): ClayItemInstance {
+  // ClayItem is a constructor function — Object.create + .call avoids
+  // needing a type assertion on `new ClayItem(...)`.
+  var instance: ClayItemInstance = Object.create(ClayItem.prototype);
+  ClayItem.call(instance, config);
+  return instance;
+}
+
+export = createClayItem;

@@ -9,37 +9,17 @@ import utils = require('../lib/utils');
 import ClayEvents = require('./clay-events');
 import componentStore = require('./component-registry');
 import manipulators = require('./manipulators');
-
-interface ClayConfigItem {
-  type: string;
-  defaultValue?: string | boolean | number;
-  messageKey?: string;
-  id?: string;
-  label?: string;
-  attributes?: Record<string, unknown>;
-  options?: unknown[];
-  items?: ClayConfigItem[];
-  capabilities?: string[];
-  group?: string;
-  clayId?: number;
-}
-
-interface ClayMeta {
-  activeWatchInfo: { platform: string; firmware: { major: number; minor: number } } | null;
-  accountToken?: string;
-  watchToken?: string;
-  userData?: Record<string, unknown>;
-}
+import { ClayConfigItem, ClayMeta, ClayConfigInstance, ClayItemInstance, ClayComponentInput, ClayComponent, ManipulatorDef } from './types';
 
 type M = ReturnType<typeof minified.HTML>;
 
-function ClayConfig(this: any, settings: Record<string, unknown>, config: ClayConfigItem | ClayConfigItem[], $rootContainer: M, meta: ClayMeta) {
-  const self: any = this;
+function ClayConfig(this: ClayConfigInstance, settings: Record<string, unknown>, config: ClayConfigItem | ClayConfigItem[], $rootContainer: M, meta: ClayMeta) {
+  const self = this;
 
   let _settings = _.copyObj(settings);
-  let _items: any[] = [];
-  let _itemsById: Record<string, any> = {};
-  let _itemsByMessageKey: Record<string, any> = {};
+  let _items: ClayItemInstance[] = [];
+  let _itemsById: Record<string, ClayItemInstance> = {};
+  let _itemsByMessageKey: Record<string, ClayItemInstance> = {};
   let _isBuilt: boolean = false;
 
   /**
@@ -60,16 +40,18 @@ function ClayConfig(this: any, settings: Record<string, unknown>, config: ClayCo
       item.forEach(function(item) {
         _addItems(item, $container);
       });
-    } else if (utils.includesCapability(meta.activeWatchInfo as any, item.capabilities)) {
+    } else if (meta.activeWatchInfo && utils.includesCapability(meta.activeWatchInfo, item.capabilities)) {
       if (item.type === 'section') {
         const $wrapper = HTML('<div class="section">');
         $container.add($wrapper);
-        _addItems(item.items as ClayConfigItem[], $wrapper);
+        if (item.items) {
+          _addItems(item.items, $wrapper);
+        }
       } else {
         const _item = _.copyObj(item);
         _item.clayId = _items.length;
 
-        const clayItem = new (ClayItem as any)(_item).initialize(self);
+        const clayItem = ClayItem(_item).initialize(self);
 
         if (_item.id) {
           _itemsById[_item.id] = clayItem;
@@ -82,12 +64,14 @@ function ClayConfig(this: any, settings: Record<string, unknown>, config: ClayCo
         _items.push(clayItem);
 
         // set the value of the item via the manipulator to ensure consistency
-        const msgKey = _item.messageKey as string;
-        const value = typeof _settings[msgKey] !== 'undefined' ?
-          _settings[msgKey] :
-          _item.defaultValue;
+        if (_item.messageKey) {
+          const msgKey = _item.messageKey;
+          const value = typeof _settings[msgKey] !== 'undefined' ?
+            _settings[msgKey] :
+            _item.defaultValue;
 
-        clayItem.set(typeof value !== 'undefined' ? value : '');
+          clayItem.set(typeof value !== 'undefined' ? value : '');
+        }
 
         $container.add(clayItem.$element);
       }
@@ -146,14 +130,14 @@ function ClayConfig(this: any, settings: Record<string, unknown>, config: ClayCo
 
   self.getItemsByType = function(type: string) {
     _checkBuilt('getItemsByType');
-    return _items.filter(function(item: any) {
+    return _items.filter(function(item: ClayItemInstance) {
       return item.config.type === type;
     });
   };
 
   self.getItemsByGroup = function(group: string) {
     _checkBuilt('getItemsByGroup');
-    return _items.filter(function(item: any) {
+    return _items.filter(function(item: ClayItemInstance) {
       return item.config.group === group;
     });
   };
@@ -163,14 +147,16 @@ function ClayConfig(this: any, settings: Record<string, unknown>, config: ClayCo
 
     _settings = {};
 
-    _.eachObj(_itemsByMessageKey, function(messageKey: string, item: any) {
-      _settings[messageKey] = {
+    _.eachObj(_itemsByMessageKey, function(messageKey: string, item: ClayItemInstance) {
+      const settingValue: Record<string, unknown> = {
         value: item.get()
       };
 
       if (item.precision) {
-        (_settings[messageKey] as Record<string, unknown>).precision = item.precision;
+        settingValue.precision = item.precision;
       }
+
+      _settings[messageKey] = settingValue;
     });
     return _settings;
   };
@@ -220,20 +206,11 @@ function ClayConfig(this: any, settings: Record<string, unknown>, config: ClayCo
   self.config = config;
 }
 
-interface RegisterComponentInput {
-  name: string;
-  template: string;
-  manipulator: string | { get: Function; set: Function; [key: string]: unknown };
-  defaults?: Record<string, unknown>;
-  style?: string;
-  initialize?: Function;
-}
-
 /**
  * Register a component to Clay. This must be called prior to .build();
  */
-ClayConfig.registerComponent = function(component: RegisterComponentInput): boolean {
-  const _component = _.copyObj(component) as any;
+ClayConfig.registerComponent = function(component: ClayComponentInput): boolean {
+  const _component = _.copyObj(component);
 
   if (componentStore[_component.name]) {
     console.warn('Component: ' + _component.name +
@@ -242,21 +219,24 @@ ClayConfig.registerComponent = function(component: RegisterComponentInput): bool
     return false;
   }
 
-  if (typeof _component.manipulator === 'string') {
-    _component.manipulator = manipulators[_component.manipulator];
+  let resolvedManipulator: ManipulatorDef;
 
-    if (!_component.manipulator) {
-      throw new Error('The manipulator: ' + component.manipulator +
+  if (typeof _component.manipulator === 'string') {
+    const found = manipulators[_component.manipulator];
+
+    if (!found) {
+      throw new Error('The manipulator: ' + _component.manipulator +
                       ' does not exist in the built-in manipulators.');
     }
-  }
-
-  if (!_component.manipulator) {
+    resolvedManipulator = found;
+  } else if (_component.manipulator) {
+    resolvedManipulator = _component.manipulator;
+  } else {
     throw new Error('The manipulator must be defined');
   }
 
-  if (typeof _component.manipulator.set !== 'function' ||
-      typeof _component.manipulator.get !== 'function') {
+  if (typeof resolvedManipulator.set !== 'function' ||
+      typeof resolvedManipulator.get !== 'function') {
     throw new Error('The manipulator must have both a `get` and `set` method');
   }
 
@@ -267,7 +247,16 @@ ClayConfig.registerComponent = function(component: RegisterComponentInput): bool
     document.head.appendChild(style);
   }
 
-  componentStore[_component.name] = _component;
+  const registered: ClayComponent = {
+    name: _component.name,
+    template: _component.template,
+    manipulator: resolvedManipulator,
+    defaults: _component.defaults,
+    style: _component.style,
+    initialize: _component.initialize
+  };
+
+  componentStore[registered.name] = registered;
   return true;
 };
 

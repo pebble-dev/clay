@@ -17,7 +17,7 @@ interface ActiveWatchInfo {
 /**
  * Batch update all the properties of an object.
  */
-function updateProperties(obj: Record<string, unknown>, descriptor: PropertyDescriptor): void {
+function updateProperties(obj: object, descriptor: PropertyDescriptor): void {
   Object.getOwnPropertyNames(obj).forEach(function(prop) {
     Object.defineProperty(obj, prop, descriptor);
   });

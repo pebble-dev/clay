@@ -1,24 +1,27 @@
 'use strict';
 
 import minified = require('../vendor/minified');
+import { ClayEventMethods } from '../lib/types';
+
 const $ = minified.$;
 const _ = minified._;
 
 type MinifiedStatic = typeof minified.$;
 type MinifiedUtils = typeof minified._;
 type M = ReturnType<MinifiedStatic>;
+type EventHandler = (...args: unknown[]) => void;
 
 interface EventProxy {
-  handler: Function;
-  proxy: Function;
+  handler: EventHandler;
+  proxy: EventHandler;
 }
 
 /**
  * Attaches event methods to the context.
  * Call with ClayEvents.call(yourObject, $eventTarget)
  */
-function ClayEvents(this: unknown, $eventTarget: M) {
-  const self = this as any;
+function ClayEvents(this: ClayEventMethods, $eventTarget: M) {
+  const self = this;
   const _eventProxies: Array<EventProxy> = [];
 
   /**
@@ -33,7 +36,7 @@ function ClayEvents(this: unknown, $eventTarget: M) {
   /**
    * Register or retrieve a proxy for the given handler.
    */
-  function _registerEventProxy(handler: Function, proxy: Function): Function {
+  function _registerEventProxy(handler: EventHandler, proxy: EventHandler): EventHandler {
     const eventProxy = _.find(_eventProxies, function(item) {
       return item.handler === handler ? item : null;
     });
@@ -49,7 +52,7 @@ function ClayEvents(this: unknown, $eventTarget: M) {
   /**
    * Retrieve the proxy function for the given handler.
    */
-  function _getEventProxy(handler: Function): Function | undefined {
+  function _getEventProxy(handler: EventHandler): EventHandler | undefined {
     var eventProxy = _.find(_eventProxies, function(item) {
       return item.handler === handler ? item : null;
     });
@@ -62,12 +65,12 @@ function ClayEvents(this: unknown, $eventTarget: M) {
    * @param handler - the event handler function
    * @returns the context object for chaining
    */
-  self.on = function(events: string, handler: Function) {
+  self.on = function(events: string, handler: EventHandler) {
     const _events = _transformEventNames(events);
-    const _proxy = _registerEventProxy(handler, function(this: unknown) {
-      handler.apply(self, arguments);
+    const _proxy = _registerEventProxy(handler, function(this: unknown, ...args: unknown[]) {
+      handler.apply(self, args);
     });
-    $eventTarget.on(_events, _proxy as (...args: unknown[]) => void);
+    $eventTarget.on(_events, _proxy);
     return self;
   };
 
@@ -77,10 +80,10 @@ function ClayEvents(this: unknown, $eventTarget: M) {
    * @param handler - the event handler function to remove
    * @returns the context object for chaining
    */
-  self.off = function(handler: Function) {
+  self.off = function(handler: EventHandler) {
     const _proxy = _getEventProxy(handler);
     if (_proxy) {
-      $.off(_proxy as (...args: unknown[]) => void);
+      $.off(_proxy);
     }
     return self;
   };
