@@ -2,12 +2,15 @@
   "name": "@rebble/clay",
   "version": "1.0.8",
   "description": "Pebble Config Framework",
+  "types": "index.d.ts",
   "scripts": {
     "test-travis": "./node_modules/.bin/gulp && ./node_modules/.bin/karma start ./test/karma.conf.js --single-run --browsers chromeTravisCI",
     "test-debug": "(export DEBUG=true && ./node_modules/.bin/gulp && ./node_modules/.bin/karma start ./test/karma.conf.js --no-single-run)",
     "test": "./node_modules/.bin/gulp && ./node_modules/.bin/karma start ./test/karma.conf.js --single-run",
     "lint": "./node_modules/.bin/eslint ./",
     "build": "gulp",
+    "build:types": "tsc -p tsconfig.declarations.json",
+    "check:types": "tsc -p tsconfig.typecheck.json",
     "dev": "gulp dev",
     "pebble-clean": "rm -rf tmp src/js/index.js && pebble clean",
     "pebble-publish": "npm run pebble-clean && npm run build && pebble build && pebble package publish && npm run pebble-clean",
@@ -85,6 +88,7 @@
     "stringify": "^3.2.0",
     "through": "^2.3.8",
     "tosource": "^1.0.0",
+    "typescript": "6.0.2",
     "vinyl-buffer": "^1.0.0",
     "vinyl-source-stream": "^2.0.0",
     "watchify": "^3.11.1"
