@@ -1,28 +1,40 @@
 'use strict';
 
-var minified = require('./vendor/minified');
-var ClayConfig = require('./lib/clay-config');
+import minified = require('./vendor/minified');
+import ClayConfig = require('./lib/clay-config');
 
-var $ = minified.$;
-var _ = minified._;
+const $ = minified.$;
+const _ = minified._;
 
-var config = _.extend([], window.clayConfig || []);
-var settings = _.extend({}, window.claySettings || {});
-var returnTo = window.returnTo || 'pebblejs://close#';
-var customFn = window.customFn || function() {};
-var clayComponents = window.clayComponents || {};
-var clayMeta = window.clayMeta || {};
+declare const window: Window & {
+  clayConfig?: unknown[];
+  claySettings?: Record<string, unknown>;
+  returnTo?: string;
+  customFn?: Function;
+  clayComponents?: Record<string, unknown>;
+  clayMeta?: Record<string, unknown>;
+};
 
-var platform = window.navigator.userAgent.match(/android/i) ? 'android' : 'ios';
+const config: unknown = Object.assign([], window.clayConfig || []);
+const settings: unknown = Object.assign({}, window.claySettings || {});
+const returnTo = window.returnTo || 'pebblejs://close#';
+const customFn = window.customFn || function() {};
+const clayComponents = window.clayComponents || {};
+const clayMeta = window.clayMeta || {};
+
+const platform = window.navigator.userAgent.match(/android/i) ? 'android' : 'ios';
 document.documentElement.classList.add('platform-' + platform);
 
 // Register the passed components
-_.eachObj(clayComponents, function(key, component) {
-  ClayConfig.registerComponent(component);
+_.eachObj(clayComponents, function(key: unknown, component: unknown) {
+  ClayConfig.registerComponent(component as any);
 });
 
-var $mainForm = $('#main-form');
-var clayConfig = new ClayConfig(settings, config, $mainForm, clayMeta);
+const $mainForm = $('#main-form');
+
+// ClayConfig is a constructor function — use Object.create + .call pattern
+const clayConfig: any = Object.create(ClayConfig.prototype);
+(ClayConfig as any).call(clayConfig, settings, config, $mainForm, clayMeta);
 
 // add listeners here
 $mainForm.on('submit', function() {

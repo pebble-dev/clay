@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "outDir": "src/scripts/.tmp",
+    "noImplicitAny": false,
+    "suppressImplicitAnyIndexErrors": true
+  },
+  "include": [
+    "src/scripts/config-page.ts",
+    "src/scripts/vendor/**/*.d.ts",
+    "src/scripts/lib/**/*.ts",
+    "types/**/*.d.ts"
+  ]
+}

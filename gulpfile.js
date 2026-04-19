@@ -40,7 +40,8 @@ gulp.task('clean-js', function() {
 * @returns {string}
 */
 function taskJs() {
-  return browserify('src/scripts/config-page.js', { debug: true })
+  return browserify('src/scripts/config-page.ts', { debug: true })
+    .plugin(tsify, { project: './tsconfig.config-page.json' })
     .transform('deamdify')
     .bundle()
     .pipe(source('config-page.js'))
@@ -94,7 +95,7 @@ gulp.task('inlineHtml', gulp.series('js', 'sass', taskInlineHtml));
 * @returns {string}
 */
 function taskClay() {
-  return browserify('index.js', {
+  return browserify('index.ts', {
     debug: false,
     standalone: clayPackage.name,
     extensions: ['.ts']
@@ -103,7 +104,7 @@ function taskClay() {
     .transform('deamdify')
     .transform(stringify(stringifyOptions))
     // .transform(autoprefixify, autoprefixerOptions)
-    .require(require.resolve('./index'), {expose: clayPackage.name})
+    .require(require.resolve('./index.ts'), {expose: clayPackage.name})
     .exclude('message_keys')
     .bundle()
     .pipe(source('index.js'))
