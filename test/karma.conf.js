@@ -37,7 +37,6 @@ module.exports = function(config) {
               [
                 '**/test/**',
                 '**/src/scripts/vendor/**',
-                '**/src/scripts/config-page.js',
                 '**/src/scripts/config-page.ts'
               ]
           }

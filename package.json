@@ -2,6 +2,7 @@
   "name": "@rebble/clay",
   "version": "1.0.8",
   "description": "Pebble Config Framework",
+  "main": "src/js/index.js",
   "types": "dist-types/index.d.ts",
   "scripts": {
     "test-travis": "./node_modules/.bin/gulp && ./node_modules/.bin/karma start ./test/karma.conf.js --single-run --browsers chromeTravisCI",

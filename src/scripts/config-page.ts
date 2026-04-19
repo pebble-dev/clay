@@ -16,8 +16,9 @@ declare const window: Window & {
   clayMeta?: ClayMeta;
 };
 
-const config = window.clayConfig || [];
-const settings = window.claySettings || {};
+const emptyConfig: ClayConfigItem[] = [];
+const config = emptyConfig.concat(window.clayConfig || []);
+const settings = Object.assign({}, window.claySettings || {});
 const returnTo = window.returnTo || 'pebblejs://close#';
 const customFn = window.customFn || function() {};
 const clayComponents = window.clayComponents || {};
