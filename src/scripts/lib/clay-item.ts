@@ -62,7 +62,7 @@ function ClayItem(this: any, config: ClayConfigItem) {
   ClayEvents.call(self, self.$manipulatorTarget);
 
   // attach the manipulator methods to the clayItem
-  _.eachObj(_component.manipulator, function(methodName: string, method: Function) {
+  _.eachObj(_component.manipulator as unknown as Record<string, Function>, function(methodName: string, method: Function) {
     self[methodName] = method.bind(self);
   });
 
