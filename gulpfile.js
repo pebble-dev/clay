@@ -100,7 +100,7 @@ function taskClay() {
     standalone: clayPackage.name,
     extensions: ['.ts']
   })
-    .plugin(tsify)
+    .plugin(tsify, { noEmit: false, forceConsistentCasingInFileNames: false })
     .transform('deamdify')
     .transform(stringify(stringifyOptions))
     // .transform(autoprefixify, autoprefixerOptions)

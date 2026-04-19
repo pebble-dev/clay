@@ -52,10 +52,8 @@ module.exports = function(config) {
 
     // list of files / patterns to load in the browser
     files: [
-      'index.js',
-      'src/scripts/**/*.js',
+      'index.ts',
       'src/scripts/**/*.ts',
-      'test/spec/**/*.js',
       'test/spec/**/*.ts'
     ],
 
@@ -65,10 +63,8 @@ module.exports = function(config) {
     // preprocess matching files before serving them to the browser
     // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
     preprocessors: {
-      'index.js': ['browserify'],
-      'src/scripts/**/*.js': ['browserify'],
+      'index.ts': ['browserify'],
       'src/scripts/**/*.ts': ['browserify'],
-      'test/spec/**/*.js': ['browserify'],
       'test/spec/**/*.ts': ['browserify']
     },
 
