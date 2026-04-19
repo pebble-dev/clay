@@ -12,8 +12,8 @@ export = {
     description: ''
   },
   initialize: function(this: ClayItemInstance, minified: MinifiedModule, clay: ClayConfigInstance): void {
-    var HTML = minified.HTML;
-    var self = this;
+    const HTML = minified.HTML;
+    const self = this;
 
     // Converts a color value to a CSS-format string, applying sunlight mapping if enabled.
     function cssColor(color: string | number | boolean | undefined): string {
@@ -64,17 +64,17 @@ export = {
     function hex2lab(hex: string): number[] {
       hex = hex.replace(/^#|^0x/, '');
 
-      var r = parseInt(hex.slice(0, 2), 16) / 255;
-      var g = parseInt(hex.slice(2, 4), 16) / 255;
-      var b = parseInt(hex.slice(4), 16) / 255;
+      let r = parseInt(hex.slice(0, 2), 16) / 255;
+      let g = parseInt(hex.slice(2, 4), 16) / 255;
+      let b = parseInt(hex.slice(4), 16) / 255;
 
       r = (r > 0.04045) ? Math.pow((r + 0.055) / 1.055, 2.4) : r / 12.92;
       g = (g > 0.04045) ? Math.pow((g + 0.055) / 1.055, 2.4) : g / 12.92;
       b = (b > 0.04045) ? Math.pow((b + 0.055) / 1.055, 2.4) : b / 12.92;
 
-      var x = (r * 0.4124 + g * 0.3576 + b * 0.1805) / 0.95047;
-      var y = (r * 0.2126 + g * 0.7152 + b * 0.0722) / 1.00000;
-      var z = (r * 0.0193 + g * 0.1192 + b * 0.9505) / 1.08883;
+      let x = (r * 0.4124 + g * 0.3576 + b * 0.1805) / 0.95047;
+      let y = (r * 0.2126 + g * 0.7152 + b * 0.0722) / 1.00000;
+      let z = (r * 0.0193 + g * 0.1192 + b * 0.9505) / 1.08883;
 
       x = (x > 0.008856) ? Math.pow(x, 1 / 3) : (7.787 * x) + 16 / 116;
       y = (y > 0.008856) ? Math.pow(y, 1 / 3) : (7.787 * y) + 16 / 116;
@@ -85,9 +85,9 @@ export = {
 
     // Find the perceptual colour distance between two LAB colours.
     function deltaE(labA: number[], labB: number[]): number {
-      var deltaL = labA[0] - labB[0];
-      var deltaA = labA[1] - labB[1];
-      var deltaB = labA[2] - labB[2];
+      const deltaL = labA[0] - labB[0];
+      const deltaA = labA[1] - labB[1];
+      const deltaB = labA[2] - labB[2];
 
       return Math.sqrt(Math.pow(deltaL, 2) +
                        Math.pow(deltaA, 2) +
@@ -96,7 +96,7 @@ export = {
 
     // Returns the layout based on the connected watch.
     function autoLayout(): (string | boolean)[][] {
-      var bwWatches = ['aplite', 'diorite', 'flint'];
+      const bwWatches = ['aplite', 'diorite', 'flint'];
       if (!clay.meta.activeWatchInfo ||
           clay.meta.activeWatchInfo.firmware.major === 2 ||
           bwWatches.indexOf(clay.meta.activeWatchInfo.platform) > -1 &&
@@ -113,29 +113,29 @@ export = {
     }
 
     self.roundColorToLayout = function(color: number | string): number {
-      var itemValue = normalizeColor(color);
+      let itemValue = normalizeColor(color);
 
       // if the color is not in the layout we will need find the closest match
       if (colorList.indexOf(itemValue) === -1) {
-        var itemValueLAB = hex2lab(itemValue);
-        var differenceArr = colorList.map(function(color) {
-          var colorLAB = hex2lab(normalizeColor(color));
+        const itemValueLAB = hex2lab(itemValue);
+        const differenceArr = colorList.map(function(color) {
+          const colorLAB = hex2lab(normalizeColor(color));
           return deltaE(itemValueLAB, colorLAB);
         });
 
         // Get the lowest number from the differenceArray
-        var lowest = Math.min.apply(Math, differenceArr);
+        const lowest = Math.min.apply(Math, differenceArr);
 
         // Get the index for that lowest number
-        var index = differenceArr.indexOf(lowest);
+        const index = differenceArr.indexOf(lowest);
         itemValue = colorList[index];
       }
 
       return parseInt(itemValue, 16);
     };
 
-    var useSunlight = self.config.sunlight !== false;
-    var sunlightColorMap: Record<string, string> = {
+    const useSunlight = self.config.sunlight !== false;
+    const sunlightColorMap: Record<string, string> = {
       '000000': '000000', '000055': '001e41', '0000aa': '004387', '0000ff': '0068ca',
       '005500': '2b4a2c', '005555': '27514f', '0055aa': '16638d', '0055ff': '007dce',
       '00aa00': '5e9860', '00aa55': '5c9b72', '00aaaa': '57a5a2', '00aaff': '4cb4db',
@@ -156,7 +156,7 @@ export = {
 
     /* eslint-disable  comma-spacing, no-multi-spaces, max-len,
      standard/array-bracket-even-spacing */
-    var standardLayouts: Record<string, (string | boolean)[][]> = {
+    const standardLayouts: Record<string, (string | boolean)[][]> = {
       COLOR: [
         [false   , false   , '55ff00', 'aaff55', false   , 'ffff55', 'ffffaa', false   , false   ],
         [false   , 'aaffaa', '55ff55', '00ff00', 'aaff00', 'ffff00', 'ffaa55', 'ffaaaa', false   ],
@@ -185,8 +185,8 @@ export = {
       return Array.isArray(val) && (val.length === 0 || !Array.isArray(val[0]));
     }
 
-    var configLayout = self.config.layout;
-    var layout: (string | boolean)[][] = autoLayout();
+    const configLayout = self.config.layout;
+    let layout: (string | boolean)[][] = autoLayout();
 
     if (configLayout) {
       if (typeof configLayout === 'string') {
@@ -198,45 +198,45 @@ export = {
       }
     }
 
-    var colorList = flattenLayout(layout).map(function(item) {
+    const colorList = flattenLayout(layout).map(function(item) {
       return normalizeColor(item);
     }).filter(function(item) {
       return item;
     });
 
-    var grid = '';
-    var rows = layout.length;
-    var cols = 0;
+    let grid = '';
+    const rows = layout.length;
+    let cols = 0;
     layout.forEach(function(row: (string | boolean)[]) {
       cols = row.length > cols ? row.length : cols;
     });
-    var itemWidth = 100 / cols;
-    var itemHeight = 100 / rows;
-    var $elem = self.$element;
+    const itemWidth = 100 / cols;
+    const itemHeight = 100 / rows;
+    const $elem = self.$element;
 
-    for (var i = 0; i < rows; i++) {
-      for (var j = 0; j < cols; j++) {
+    for (let i = 0; i < rows; i++) {
+      for (let j = 0; j < cols; j++) {
 
-        var color = normalizeColor(layout[i][j]);
-        var selectable = (color ? ' selectable' : '');
+        const color = normalizeColor(layout[i][j]);
+        const selectable = (color ? ' selectable' : '');
 
-        var roundedTL = (i === 0 && j === 0) || i === 0 && !layout[i][j - 1] ||
+        const roundedTL = (i === 0 && j === 0) || i === 0 && !layout[i][j - 1] ||
                         !layout[i][j - 1] && !layout[i - 1][j] ?
           ' rounded-tl' :
           '';
 
-        var roundedTR = i === 0 && !layout[i][j + 1] ||
+        const roundedTR = i === 0 && !layout[i][j + 1] ||
                         !layout[i][j + 1] && !layout[i - 1][j] ?
           ' rounded-tr ' :
           '';
 
-        var roundedBL = (i === layout.length - 1 && j === 0) ||
+        const roundedBL = (i === layout.length - 1 && j === 0) ||
                         i === layout.length - 1 && !layout[i][j - 1] ||
                         !layout[i][j - 1] && !layout[i + 1][j] ?
           ' rounded-bl' :
           '';
 
-        var roundedBR = i === layout.length - 1 && !layout[i][j + 1] ||
+        const roundedBR = i === layout.length - 1 && !layout[i][j + 1] ||
                         !layout[i][j + 1] && !layout[i + 1][j] ?
           ' rounded-br' :
           '';
@@ -255,15 +255,15 @@ export = {
 
     // on very small layouts the boxes end up huge. The following adds extra padding
     // to prevent them from being so big.
-    var extraPadding = 0;
+    let extraPadding = 0;
     if (cols === 3) {
       extraPadding = 5;
     }
     if (cols === 2) {
       extraPadding = 8;
     }
-    var vPadding = (extraPadding * itemWidth / itemHeight) + '%';
-    var hPadding = extraPadding + '%';
+    const vPadding = (extraPadding * itemWidth / itemHeight) + '%';
+    const hPadding = extraPadding + '%';
     $elem.select('.color-box-container')
       .add(HTML(grid))
       .set('$paddingTop', vPadding)
@@ -276,9 +276,9 @@ export = {
       (itemWidth / itemHeight * 100) + '%'
     );
 
-    var $valueDisplay = $elem.select('.value');
-    var $picker = $elem.select('.picker-wrap');
-    var disabled = self.$manipulatorTarget.get('disabled');
+    const $valueDisplay = $elem.select('.value');
+    const $picker = $elem.select('.picker-wrap');
+    let disabled = self.$manipulatorTarget.get('disabled');
 
     $elem.select('label').on('click', function() {
       if (!disabled) {
@@ -287,8 +287,8 @@ export = {
     });
 
     self.on('change', function() {
-      var rawValue = self.get();
-      var value = typeof rawValue === 'number' || typeof rawValue === 'string' || typeof rawValue === 'boolean' ? rawValue : undefined;
+      const rawValue = self.get();
+      const value = typeof rawValue === 'number' || typeof rawValue === 'string' || typeof rawValue === 'boolean' ? rawValue : undefined;
       $valueDisplay.set('$background-color', cssColor(value));
       $elem.select('.color-box').set('-selected');
       $elem.select('.color-box[data-value="' + value + '"]').set('+selected');

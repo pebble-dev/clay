@@ -19,9 +19,9 @@ declare function toSource(obj: unknown): string;
 import deepcopy = require('deepcopy/build/deepcopy.min');
 
 interface PebbleObject {
-  addEventListener(event: string, handler: Function): void;
+  addEventListener(event: string, handler: (...args: unknown[]) => void): void;
   openURL(url: string): void;
-  sendAppMessage(data: Record<string, unknown>, success?: Function, failure?: Function): void;
+  sendAppMessage(data: Record<string, unknown>, success?: () => void, failure?: (error: unknown) => void): void;
   getActiveWatchInfo?(): { platform: string; firmware: { major: number; minor: number } };
   getAccountToken(): string;
   getWatchToken(): string;
@@ -172,11 +172,9 @@ function Clay(this: ClayInstance, config: ClayConfigItem[], customFn?: ((this: u
  * @returns Returns true if component was registered correctly
  */
 Clay.prototype.registerComponent = function(this: ClayInstance, component: unknown): boolean {
-  if (typeof component === 'object' && component !== null && 'name' in component) {
-    if ('name' in component && typeof component.name === 'string') {
-      this.components[component.name] = component;
-      return true;
-    }
+  if (typeof component === 'object' && component !== null && 'name' in component && typeof component.name === 'string') {
+    this.components[component.name] = component;
+    return true;
   }
   return false;
 };

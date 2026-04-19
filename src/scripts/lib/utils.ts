@@ -1,17 +1,11 @@
 'use strict';
 
+import type { ActiveWatchInfo } from './types';
+
 interface CapabilityMapping {
   platforms: string[];
   minFwMajor: number;
   minFwMinor: number;
-}
-
-interface ActiveWatchInfo {
-  platform: string;
-  firmware: {
-    major: number;
-    minor: number;
-  };
 }
 
 /**
@@ -125,16 +119,16 @@ const capabilityMap: Record<string, CapabilityMapping> = {
  * Checks if all of the provided capabilities are compatible with the watch.
  */
 function includesCapability(activeWatchInfo: ActiveWatchInfo, capabilities?: string[]): boolean {
-  var notRegex = /^NOT_/;
-  var result: boolean[] = [];
+  const notRegex = /^NOT_/;
+  const result: boolean[] = [];
 
   if (!capabilities || !capabilities.length) {
     return true;
   }
 
-  for (var i = capabilities.length - 1; i >= 0; i--) {
-    var capability = capabilities[i];
-    var mapping = capabilityMap[capability.replace(notRegex, '')];
+  for (let i = capabilities.length - 1; i >= 0; i--) {
+    const capability = capabilities[i];
+    const mapping = capabilityMap[capability.replace(notRegex, '')];
 
     if (!mapping ||
         mapping.platforms.indexOf(activeWatchInfo.platform) === -1 ||

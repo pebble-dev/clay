@@ -10,7 +10,7 @@
 /** A Clay config item as provided in the config array */
 export interface ClayConfigItem {
   type: string;
-  defaultValue?: string | boolean | number;
+  defaultValue?: string | boolean | number | unknown[];
   messageKey?: string;
   id?: string;
   label?: string;

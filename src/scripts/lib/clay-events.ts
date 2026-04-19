@@ -53,7 +53,7 @@ function ClayEvents(this: ClayEventMethods, $eventTarget: M) {
    * Retrieve the proxy function for the given handler.
    */
   function _getEventProxy(handler: EventHandler): EventHandler | undefined {
-    var eventProxy = _.find(_eventProxies, function(item) {
+    const eventProxy = _.find(_eventProxies, function(item) {
       return item.handler === handler ? item : null;
     });
     return eventProxy ? eventProxy.proxy : undefined;

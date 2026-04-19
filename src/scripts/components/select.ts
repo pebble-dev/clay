@@ -20,10 +20,10 @@ export = {
 
     // Updates the HTML value of the component to match the selected option's label
     function setValueDisplay() {
-      var idx = Number(self.$manipulatorTarget.get('selectedIndex'));
-      var $options = self.$manipulatorTarget.select('option');
-      var optionEl = $options[idx];
-      var value = optionEl ? optionEl.innerHTML : '';
+      const idx = Number(self.$manipulatorTarget.get('selectedIndex'));
+      const $options = self.$manipulatorTarget.select('option');
+      const optionEl = $options[idx];
+      const value = optionEl ? optionEl.innerHTML : '';
       $value.set('innerHTML', value);
     }
 

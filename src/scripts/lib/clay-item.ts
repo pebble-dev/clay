@@ -69,7 +69,7 @@ function ClayItem(this: ClayItemInstance, config: ClayConfigItem) {
 function createClayItem(config: ClayConfigItem): ClayItemInstance {
   // ClayItem is a constructor function — Object.create + .call avoids
   // needing a type assertion on `new ClayItem(...)`.
-  var instance: ClayItemInstance = Object.create(ClayItem.prototype);
+  const instance: ClayItemInstance = Object.create(ClayItem.prototype);
   ClayItem.call(instance, config);
   return instance;
 }

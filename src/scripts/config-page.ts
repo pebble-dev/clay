@@ -11,7 +11,7 @@ declare const window: Window & {
   clayConfig?: ClayConfigItem[];
   claySettings?: Record<string, unknown>;
   returnTo?: string;
-  customFn?: Function;
+  customFn?: (...args: unknown[]) => void;
   clayComponents?: Record<string, ClayComponentInput>;
   clayMeta?: ClayMeta;
 };

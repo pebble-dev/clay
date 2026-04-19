@@ -5,20 +5,6 @@ import { ManipulatorDef, ClayItemInstance } from '../lib/types';
 
 const _ = minified._;
 
-interface M {
-  [index: number]: HTMLElement;
-  length: number;
-  add(child: M | string): M;
-  set(property: string, value?: unknown): M;
-  set(cssObj: Record<string, unknown>): M;
-  get(property: string): unknown;
-  select(selector: string): M;
-  on(events: string, handler: (...args: unknown[]) => void): M;
-  off(handler: (...args: unknown[]) => void): M;
-  trigger(name: string, eventObj?: unknown): M;
-  each(callback: (element: HTMLElement, index: number) => void): M;
-}
-
 function isInputElement(el: HTMLElement): el is HTMLInputElement {
   return 'checked' in el;
 }
