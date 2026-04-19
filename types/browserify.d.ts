@@ -11,5 +11,6 @@ declare module '*.css' {
   export default content;
 }
 
-// Ambient require for dynamic browserify imports (components, templates)
-declare function require(name: string): any;
+// Ambient require for dynamic browserify imports (components, templates, JSON)
+// Returns unknown since the actual type depends on the browserify transform.
+declare function require(name: string): unknown;

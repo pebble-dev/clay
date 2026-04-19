@@ -14,7 +14,7 @@
     "baseUrl": "."
   },
   "include": [
-    "index.js",
+    "index.ts",
     "src/scripts/**/*.js",
     "src/scripts/**/*.ts",
     "test/**/*.js",
@@ -26,6 +26,7 @@
     "src/scripts/vendor",
     "tmp",
     "dist",
-    "dist-types"
+    "dist-types",
+    "test/type-checks.ts"
   ]
 }

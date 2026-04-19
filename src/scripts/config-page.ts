@@ -2,43 +2,40 @@
 
 import minified = require('./vendor/minified');
 import ClayConfig = require('./lib/clay-config');
+import { ClayComponentInput, ClayConfigItem, ClayMeta } from './lib/types';
 
 const $ = minified.$;
 const _ = minified._;
 
 declare const window: Window & {
-  clayConfig?: unknown[];
+  clayConfig?: ClayConfigItem[];
   claySettings?: Record<string, unknown>;
   returnTo?: string;
   customFn?: Function;
-  clayComponents?: Record<string, unknown>;
-  clayMeta?: Record<string, unknown>;
+  clayComponents?: Record<string, ClayComponentInput>;
+  clayMeta?: ClayMeta;
 };
 
-const config: unknown = Object.assign([], window.clayConfig || []);
-const settings: unknown = Object.assign({}, window.claySettings || {});
+const config = window.clayConfig || [];
+const settings = window.claySettings || {};
 const returnTo = window.returnTo || 'pebblejs://close#';
 const customFn = window.customFn || function() {};
 const clayComponents = window.clayComponents || {};
-const clayMeta = window.clayMeta || {};
+const clayMeta: ClayMeta = window.clayMeta || { activeWatchInfo: null };
 
 const platform = window.navigator.userAgent.match(/android/i) ? 'android' : 'ios';
 document.documentElement.classList.add('platform-' + platform);
 
 // Register the passed components
-_.eachObj(clayComponents, function(key: unknown, component: unknown) {
-  ClayConfig.registerComponent(component as any);
+_.eachObj(clayComponents, function(_key: string, component: ClayComponentInput) {
+  ClayConfig.registerComponent(component);
 });
 
 const $mainForm = $('#main-form');
+const clayConfig = ClayConfig(settings, config, $mainForm, clayMeta);
 
-// ClayConfig is a constructor function — use Object.create + .call pattern
-const clayConfig: any = Object.create(ClayConfig.prototype);
-(ClayConfig as any).call(clayConfig, settings, config, $mainForm, clayMeta);
-
-// add listeners here
+// Add listeners here
 $mainForm.on('submit', function() {
-  // Set the return URL depending on the runtime environment
   location.href = returnTo +
                   encodeURIComponent(JSON.stringify(clayConfig.serialize()));
 });

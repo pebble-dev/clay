@@ -1,6 +1,6 @@
 'use strict';
 
-export = {
+const components: Record<string, unknown> = {
   color: require('./color'),
   footer: require('./footer'),
   heading: require('./heading'),
@@ -14,3 +14,5 @@ export = {
   button: require('./button'),
   slider: require('./slider')
 };
+
+export = components;

@@ -260,4 +260,17 @@ ClayConfig.registerComponent = function(component: ClayComponentInput): boolean 
   return true;
 };
 
-export = ClayConfig;
+function createClayConfig(
+  settings: Record<string, unknown>,
+  config: ClayConfigItem | ClayConfigItem[],
+  $rootContainer: M,
+  meta: ClayMeta
+): ClayConfigInstance {
+  const instance: ClayConfigInstance = Object.create(ClayConfig.prototype);
+  ClayConfig.call(instance, settings, config, $rootContainer, meta);
+  return instance;
+}
+
+createClayConfig.registerComponent = ClayConfig.registerComponent;
+
+export = createClayConfig;

@@ -2,16 +2,21 @@
 
 import configPageHtml = require('./tmp/config-page.html');
 import standardComponents = require('./src/scripts/components');
-import deepcopyModule = require('deepcopy/build/deepcopy.min');
-const { version } = require('./package.json');
+function extractVersion(): string {
+  const pkg: unknown = require('./package.json');
+  if (typeof pkg === 'object' && pkg !== null && 'version' in pkg && typeof pkg.version === 'string') {
+    return pkg.version;
+  }
+  return '';
+}
+const version = extractVersion();
 import messageKeys = require('message_keys');
 
 import { ClayConfigItem, ClayMeta } from './src/scripts/lib/types';
 
 declare function toSource(obj: unknown): string;
 
-// deepcopy module exports a function
-const deepcopy = deepcopyModule as <T>(obj: T) => T;
+import deepcopy = require('deepcopy/build/deepcopy.min');
 
 interface PebbleObject {
   addEventListener(event: string, handler: Function): void;
@@ -103,10 +108,12 @@ function Clay(this: ClayInstance, config: ClayConfigItem[], customFn?: ((this: u
 
       if (!e || typeof e !== 'object' || !('response' in e)) { return; }
 
-      const response = (e as Record<string, unknown>).response;
+      const response = e.response;
+
+      if (typeof response !== 'string') { return; }
 
       // Send settings to Pebble watchapp
-      Pebble.sendAppMessage(self.getSettings(response as string), function() {
+      Pebble.sendAppMessage(self.getSettings(response), function() {
         console.log('Sent config data to Pebble');
       }, function(error: unknown) {
         console.log('Failed to send config data!');
@@ -136,9 +143,11 @@ function Clay(this: ClayInstance, config: ClayConfigItem[], customFn?: ((this: u
 
   // register standard components
   _scanConfig(self.config, function(item) {
-    return !!(standardComponents as Record<string, unknown>)[item.type];
+    return item.type in standardComponents;
   }, function(item) {
-    self.registerComponent((standardComponents as Record<string, unknown>)[item.type]);
+    if (item.type in standardComponents) {
+      self.registerComponent(standardComponents[item.type]);
+    }
   });
 
   // validate config against the use of appKeys
@@ -162,9 +171,14 @@ function Clay(this: ClayInstance, config: ClayConfigItem[], customFn?: ((this: u
  * @param component.initialize - method to scaffold the component
  * @returns Returns true if component was registered correctly
  */
-Clay.prototype.registerComponent = function(this: ClayInstance, component: Record<string, unknown>): boolean {
-  this.components[(component as Record<string, unknown>).name as string] = component;
-  return true;
+Clay.prototype.registerComponent = function(this: ClayInstance, component: unknown): boolean {
+  if (typeof component === 'object' && component !== null && 'name' in component) {
+    if ('name' in component && typeof component.name === 'string') {
+      this.components[component.name] = component;
+      return true;
+    }
+  }
+  return false;
 };
 
 /**
@@ -223,7 +237,7 @@ Clay.prototype.getSettings = function(this: ClayInstance, response: string, conv
   Object.keys(settings).forEach(function(key) {
     const val = settings[key];
     if (typeof val === 'object' && val !== null && 'value' in val) {
-      settingsStorage[key] = (val as Record<string, unknown>).value;
+      settingsStorage[key] = val.value;
     } else {
       settingsStorage[key] = val;
     }
@@ -259,12 +273,11 @@ Clay.prototype.setSettings = function(this: ClayInstance, key: string | Record<s
   }
 
   if (typeof key === 'object' && key !== null) {
-    const settings = key;
-    Object.keys(settings).forEach(function(k) {
-      settingsStorage[k] = (settings as Record<string, unknown>)[k];
+    Object.keys(key).forEach(function(k) {
+      settingsStorage[k] = key[k];
     });
-  } else {
-    settingsStorage[key as string] = value;
+  } else if (typeof key === 'string') {
+    settingsStorage[key] = value;
   }
 
   localStorage.setItem('clay-settings', JSON.stringify(settingsStorage));
@@ -306,34 +319,32 @@ Clay.prepareForAppMessage = function(val: unknown): unknown {
     return Math.floor(number * Math.pow(10, precision || 0));
   }
 
-  let result: unknown;
-
   if (Array.isArray(val)) {
-    result = [];
+    const resultArr: unknown[] = [];
     val.forEach(function(item, index) {
-      (result as unknown[])[index] = Clay.prepareForAppMessage(item);
+      resultArr[index] = Clay.prepareForAppMessage(item);
     });
-  } else if (typeof val === 'object' && val !== null) {
-    const obj = val as Record<string, unknown>;
-    if (typeof obj.value === 'number') {
-      result = _normalizeToPrecision(obj.value, obj.precision as number);
-    } else if (Array.isArray(obj.value)) {
-      result = obj.value.map(function(item) {
+    return resultArr;
+  } else if (typeof val === 'object' && val !== null && !Array.isArray(val) && 'value' in val) {
+    if (typeof val.value === 'number') {
+      const precision = 'precision' in val && typeof val.precision === 'number' ? val.precision : undefined;
+      return _normalizeToPrecision(val.value, precision);
+    } else if (Array.isArray(val.value)) {
+      const prec = 'precision' in val && typeof val.precision === 'number' ? val.precision : undefined;
+      return val.value.map(function(item) {
         if (typeof item === 'number') {
-          return _normalizeToPrecision(item, obj.precision as number);
+          return _normalizeToPrecision(item, prec);
         }
         return item;
       });
     } else {
-      result = Clay.prepareForAppMessage(obj.value);
+      return Clay.prepareForAppMessage(val.value);
     }
   } else if (typeof val === 'boolean') {
-    result = val ? 1 : 0;
-  } else {
-    result = val;
+    return val ? 1 : 0;
   }
 
-  return result;
+  return val;
 };
 
 /**
@@ -361,16 +372,19 @@ Clay.prepareSettingsForAppMessage = function(settings: Record<string, unknown>):
       flatSettings[flatKey] = [];
     }
 
-    (flatSettings[flatKey] as unknown[])[position] = val;
+    const flatValue = flatSettings[flatKey];
+    if (Array.isArray(flatValue)) {
+      flatValue[position] = val;
+    }
   });
 
   const result: Record<string, unknown> = {};
   Object.keys(flatSettings).forEach(function(key) {
-    const messageKey = (messageKeys as Record<string, number>)[key];
+    const messageKey = messageKeys[key];
     let settingArr = Clay.prepareForAppMessage(flatSettings[key]);
-    settingArr = Array.isArray(settingArr) ? settingArr : [settingArr];
+    const settingList = Array.isArray(settingArr) ? settingArr : [settingArr];
 
-    (settingArr as unknown[]).forEach(function(setting, index) {
+    settingList.forEach(function(setting, index) {
       result[messageKey + index] = setting;
     });
   });
