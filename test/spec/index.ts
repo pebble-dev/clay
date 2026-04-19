@@ -82,7 +82,8 @@ describe('Clay', function() {
   describe('Clay constructor', function() {
     it('throws if the config is not an array', function() {
       assert.throws(function() {
-        fixture.clay({} as any);
+        // @ts-expect-error — deliberately passing wrong type to test error handling
+        fixture.clay({});
       }, /must be an Array/i);
     });
 
@@ -97,7 +98,8 @@ describe('Clay', function() {
 
     it('throws if customFn is not a function', function() {
       assert.throws(function() {
-        fixture.clay([], {} as any);
+        // @ts-expect-error — deliberately passing wrong type to test error handling
+        fixture.clay([], {});
       }, /must be a function/i);
     });
 

@@ -152,7 +152,7 @@ function Clay(this: ClayInstance, config: ClayConfigItem[], customFn?: ((this: u
 
   // validate config against the use of appKeys
   _scanConfig(self.config, function(item) {
-    return !!item.messageKey;
+    return !!item.appKey;
   }, function() {
     throw new Error('appKeys are no longer supported. ' +
                     'Please follow the migration guide to upgrade your project');

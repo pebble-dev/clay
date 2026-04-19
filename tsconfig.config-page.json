@@ -3,8 +3,7 @@
   "compilerOptions": {
     "noEmit": false,
     "outDir": "src/scripts/.tmp",
-    "noImplicitAny": false,
-    "suppressImplicitAnyIndexErrors": true
+    "noImplicitAny": false
   },
   "include": [
     "src/scripts/config-page.ts",

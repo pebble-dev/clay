@@ -1,3 +1,6 @@
+// Module declaration for tsify/browserify resolution.
+// Global interface declarations are in types/minified.d.ts — keep both in sync.
+
 interface M {
   [index: number]: HTMLElement;
   length: number;
