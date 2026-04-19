@@ -1,24 +1,29 @@
 'use strict';
 
+interface CapabilityMapping {
+  platforms: string[];
+  minFwMajor: number;
+  minFwMinor: number;
+}
+
+interface ActiveWatchInfo {
+  platform: string;
+  firmware: {
+    major: number;
+    minor: number;
+  };
+}
+
 /**
  * Batch update all the properties of an object.
- * @param {Object} obj
- * @param {Object} descriptor
- * @param {boolean} [descriptor.configurable]
- * @param {boolean} [descriptor.enumerable]
- * @param {*} [descriptor.value]
- * @param {boolean} [descriptor.writable]
- * @param {function} [descriptor.get]
- * @param {function} [descriptor.set]
- * @return {void}
  */
-module.exports.updateProperties = function(obj, descriptor) {
+function updateProperties(obj: Record<string, unknown>, descriptor: PropertyDescriptor): void {
   Object.getOwnPropertyNames(obj).forEach(function(prop) {
     Object.defineProperty(obj, prop, descriptor);
   });
-};
+}
 
-module.exports.capabilityMap = {
+const capabilityMap: Record<string, CapabilityMapping> = {
   PLATFORM_APLITE: {
     platforms: ['aplite'],
     minFwMajor: 0,
@@ -117,14 +122,11 @@ module.exports.capabilityMap = {
 };
 
 /**
- * Checks if all of the provided capabilities are compatible with the watch
- * @param {Object} activeWatchInfo
- * @param {Array<string>} [capabilities]
- * @return {boolean}
+ * Checks if all of the provided capabilities are compatible with the watch.
  */
-module.exports.includesCapability = function(activeWatchInfo, capabilities) {
+function includesCapability(activeWatchInfo: ActiveWatchInfo, capabilities?: string[]): boolean {
   var notRegex = /^NOT_/;
-  var result = [];
+  var result: boolean[] = [];
 
   if (!capabilities || !capabilities.length) {
     return true;
@@ -132,7 +134,7 @@ module.exports.includesCapability = function(activeWatchInfo, capabilities) {
 
   for (var i = capabilities.length - 1; i >= 0; i--) {
     var capability = capabilities[i];
-    var mapping = module.exports.capabilityMap[capability.replace(notRegex, '')];
+    var mapping = capabilityMap[capability.replace(notRegex, '')];
 
     if (!mapping ||
         mapping.platforms.indexOf(activeWatchInfo.platform) === -1 ||
@@ -147,4 +149,6 @@ module.exports.includesCapability = function(activeWatchInfo, capabilities) {
   }
 
   return result.indexOf(false) === -1;
-};
+}
+
+export = { updateProperties, capabilityMap, includesCapability };
