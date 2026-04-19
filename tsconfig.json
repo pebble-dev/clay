@@ -21,7 +21,7 @@
   ],
   "exclude": [
     "node_modules",
-    "src/scripts/vendor",
+    "src/scripts/vendor/*.js",
     "tmp",
     "dist",
     "dist-types"
