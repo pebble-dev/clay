@@ -14,6 +14,7 @@ var autoprefixer = require('gulp-autoprefixer');
 var uglify = require('gulp-uglify');
 var autoprefixify = require('./src/scripts/vendor/autoprefixify');
 var insert = require('gulp-insert');
+var tsify = require('tsify');
 var clayPackage = require('./package.json');
 
 var sassIncludePaths = [].concat(
@@ -95,8 +96,10 @@ gulp.task('inlineHtml', gulp.series('js', 'sass', taskInlineHtml));
 function taskClay() {
   return browserify('index.js', {
     debug: false,
-    standalone: clayPackage.name
+    standalone: clayPackage.name,
+    extensions: ['.ts']
   })
+    .plugin(tsify)
     .transform('deamdify')
     .transform(stringify(stringifyOptions))
     // .transform(autoprefixify, autoprefixerOptions)
@@ -114,11 +117,10 @@ function taskClay() {
 
 gulp.task('clay', gulp.series('inlineHtml', taskClay));
 
-// Validates the curated index.d.ts against test/type-checks.ts.
-// For per-file reference declarations in dist-types/, run: npm run build:types
+// Type-checks all TypeScript and JavaScript source files.
 gulp.task('types', function(done) {
   var exec = require('child_process').exec;
-  exec('npx tsc -p tsconfig.typecheck.json', function(err, stdout, stderr) {
+  exec('npx tsc --noEmit', function(err, stdout, stderr) {
     if (stdout) { console.log(stdout); }
     if (stderr) { console.error(stderr); }
     done(err);

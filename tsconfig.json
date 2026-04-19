@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+    "target": "ES5",
+    "module": "commonjs",
+    "moduleResolution": "node10",
+    "ignoreDeprecations": "6.0",
+    "strict": true,
+    "allowJs": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "sourceMap": true,
+    "skipLibCheck": true,
+    "typeRoots": ["./types", "./node_modules/@types"],
+    "baseUrl": "."
+  },
+  "include": [
+    "index.js",
+    "src/scripts/**/*.js",
+    "src/scripts/**/*.ts",
+    "test/**/*.js",
+    "test/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "src/scripts/vendor",
+    "tmp",
+    "dist",
+    "dist-types"
+  ]
+}

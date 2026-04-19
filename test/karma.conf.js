@@ -20,6 +20,8 @@ module.exports = function(config) {
 
     browserify: {
       debug: true,
+      extensions: ['.ts'],
+      plugin: ['tsify'],
       transform: [
         [
           'stringify',
@@ -35,7 +37,8 @@ module.exports = function(config) {
               [
                 '**/test/**',
                 '**/src/scripts/vendor/**',
-                '**/src/scripts/config-page.js'
+                '**/src/scripts/config-page.js',
+                '**/src/scripts/config-page.ts'
               ]
           }
         ]
@@ -51,7 +54,9 @@ module.exports = function(config) {
     files: [
       'index.js',
       'src/scripts/**/*.js',
-      'test/spec/**/*.js'
+      'src/scripts/**/*.ts',
+      'test/spec/**/*.js',
+      'test/spec/**/*.ts'
     ],
 
     // list of files to exclude
@@ -62,7 +67,9 @@ module.exports = function(config) {
     preprocessors: {
       'index.js': ['browserify'],
       'src/scripts/**/*.js': ['browserify'],
-      'test/spec/**/*.js': ['browserify']
+      'src/scripts/**/*.ts': ['browserify'],
+      'test/spec/**/*.js': ['browserify'],
+      'test/spec/**/*.ts': ['browserify']
     },
 
     // test results reporter to use
