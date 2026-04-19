@@ -20,7 +20,7 @@ interface MinifiedStatic {
 interface MinifiedUtils {
   copyObj<T>(obj: T): T;
   extend(target: Record<string, unknown>, ...sources: Record<string, unknown>[]): Record<string, unknown>;
-  eachObj<T>(obj: Record<string, T>, callback: (key: string, value: T) => void): void;
+  eachObj<T extends object>(obj: T, callback: (key: string, value: T[keyof T]) => void): void;
   find<T>(array: T[], callback: (item: T) => unknown): T | undefined;
   equals(a: unknown, b: unknown): boolean;
 }
