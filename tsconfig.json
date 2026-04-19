@@ -18,7 +18,8 @@
     "src/scripts/**/*.js",
     "src/scripts/**/*.ts",
     "test/**/*.js",
-    "test/**/*.ts"
+    "test/**/*.ts",
+    "types/**/*.d.ts"
   ],
   "exclude": [
     "node_modules",
