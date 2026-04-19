@@ -1,6 +1,6 @@
 'use strict';
 
-module.exports = {
+export = {
   color: require('./color'),
   footer: require('./footer'),
   heading: require('./heading'),

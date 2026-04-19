@@ -24,14 +24,15 @@ export = {
 
     // Sets the value display
     function setValueDisplay() {
-      const value = self.get().toFixed(self.precision);
+      var rawValue = self.get();
+      var value = typeof rawValue === 'number' ? rawValue.toFixed(self.precision) : String(rawValue);
       $value.set('value', value);
       $valuePad.set('innerHTML', value);
     }
 
-    let step = $slider.get('step');
-    step = step.toString(10).split('.')[1];
-    self.precision = step ? step.length : 0;
+    var stepStr = String($slider.get('step'));
+    var stepDecimal = stepStr.split('.')[1];
+    self.precision = stepDecimal ? stepDecimal.length : 0;
 
     self.on('change', setValueDisplay);
     $slider.on('|input', setValueDisplay);

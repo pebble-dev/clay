@@ -11,7 +11,7 @@ export = {
     label: '',
     description: ''
   },
-  initialize: function(this: ClayItemInstance, minified: unknown, clay: ClayConfigInstance): void {
+  initialize: function(this: ClayItemInstance, minified: MinifiedModule, clay: ClayConfigInstance): void {
     var HTML = minified.HTML;
     var self = this;
 
@@ -177,15 +177,25 @@ export = {
     };
     /* eslint-enable */
 
-    var layout = self.config.layout || autoLayout();
-
-    if (typeof layout === 'string') {
-      layout = standardLayouts[layout];
+    function isLayoutGrid(val: unknown): val is (string | boolean)[][] {
+      return Array.isArray(val) && (val.length === 0 || Array.isArray(val[0]));
     }
 
-    // make sure layout is a 2D array
-    if (!Array.isArray(layout[0])) {
-      layout = [layout];
+    function isLayoutRow(val: unknown): val is (string | boolean)[] {
+      return Array.isArray(val) && (val.length === 0 || !Array.isArray(val[0]));
+    }
+
+    var configLayout = self.config.layout;
+    var layout: (string | boolean)[][] = autoLayout();
+
+    if (configLayout) {
+      if (typeof configLayout === 'string') {
+        layout = standardLayouts[configLayout];
+      } else if (isLayoutGrid(configLayout)) {
+        layout = configLayout;
+      } else if (isLayoutRow(configLayout)) {
+        layout = [configLayout];
+      }
     }
 
     var colorList = flattenLayout(layout).map(function(item) {
@@ -277,7 +287,8 @@ export = {
     });
 
     self.on('change', function() {
-      var value = self.get();
+      var rawValue = self.get();
+      var value = typeof rawValue === 'number' || typeof rawValue === 'string' || typeof rawValue === 'boolean' ? rawValue : undefined;
       $valueDisplay.set('$background-color', cssColor(value));
       $elem.select('.color-box').set('-selected');
       $elem.select('.color-box[data-value="' + value + '"]').set('+selected');

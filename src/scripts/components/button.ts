@@ -1,6 +1,6 @@
 'use strict';
 
-module.exports = {
+export = {
   name: 'button',
   template: require('../../templates/components/button.tpl'),
   style: require('../../../tmp/button.css'),

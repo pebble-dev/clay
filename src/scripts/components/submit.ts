@@ -1,6 +1,6 @@
 'use strict';
 
-module.exports = {
+export = {
   name: 'submit',
   template: require('../../templates/components/submit.tpl'),
   style: require('../../../tmp/submit.css'),

@@ -1,6 +1,6 @@
 'use strict';
 
-module.exports = {
+export = {
   name: 'radiogroup',
   template: require('../../templates/components/radiogroup.tpl'),
   style: require('../../../tmp/radiogroup.css'),
