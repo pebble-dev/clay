@@ -3,3 +3,4 @@
 !/dist.zip
 !/src/**/*
 !/index.js
+!/index.d.ts
