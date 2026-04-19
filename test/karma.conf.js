@@ -20,6 +20,8 @@ module.exports = function(config) {
 
     browserify: {
       debug: true,
+      extensions: ['.ts'],
+      plugin: ['tsify'],
       transform: [
         [
           'stringify',
@@ -35,7 +37,7 @@ module.exports = function(config) {
               [
                 '**/test/**',
                 '**/src/scripts/vendor/**',
-                '**/src/scripts/config-page.js'
+                '**/src/scripts/config-page.ts'
               ]
           }
         ]
@@ -49,9 +51,9 @@ module.exports = function(config) {
 
     // list of files / patterns to load in the browser
     files: [
-      'index.js',
-      'src/scripts/**/*.js',
-      'test/spec/**/*.js'
+      'index.ts',
+      'src/scripts/**/*.ts',
+      'test/spec/**/*.ts'
     ],
 
     // list of files to exclude
@@ -60,9 +62,9 @@ module.exports = function(config) {
     // preprocess matching files before serving them to the browser
     // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
     preprocessors: {
-      'index.js': ['browserify'],
-      'src/scripts/**/*.js': ['browserify'],
-      'test/spec/**/*.js': ['browserify']
+      'index.ts': ['browserify'],
+      'src/scripts/**/*.ts': ['browserify'],
+      'test/spec/**/*.ts': ['browserify']
     },
 
     // test results reporter to use

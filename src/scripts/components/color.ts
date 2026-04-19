@@ -1,0 +1,328 @@
+'use strict';
+
+import { ClayItemInstance, ClayConfigInstance } from '../lib/types';
+
+export = {
+  name: 'color',
+  template: require('../../templates/components/color.tpl'),
+  style: require('../../../tmp/color.css'),
+  manipulator: 'color',
+  defaults: {
+    label: '',
+    description: ''
+  },
+  initialize: function(this: ClayItemInstance, minified: MinifiedModule, clay: ClayConfigInstance): void {
+    const HTML = minified.HTML;
+    const self = this;
+
+    // Converts a color value to a CSS-format string, applying sunlight mapping if enabled.
+    function cssColor(color: string | number | boolean | undefined): string {
+      if (typeof color === 'number') {
+        color = color.toString(16);
+      } else if (!color) {
+        return 'transparent';
+      }
+
+      if (typeof color !== 'string') {
+        return 'transparent';
+      }
+
+      color = padColorString(color);
+
+      return '#' + (useSunlight ? sunlightColorMap[color] : color);
+    }
+
+    // Pads a color string to 6 characters by prepending zeros.
+    function padColorString(color: string): string {
+      color = color.toLowerCase();
+
+      while (color.length < 6) {
+        color = '0' + color;
+      }
+
+      return color;
+    }
+
+    // Normalises a color value to a hexadecimal string without #/0x prefix.
+    function normalizeColor(value: unknown): string {
+      switch (typeof value) {
+        case 'number': return padColorString(value.toString(16));
+        case 'string': return value.replace(/^#|^0x/, '');
+        default: return '';
+      }
+    }
+
+    // Flattens a 2D layout array into a 1D array.
+    function flattenLayout(layout: (string | boolean)[][]): (string | boolean)[] {
+      return layout.reduce(function(a, b) {
+        return a.concat(b);
+      }, []);
+    }
+
+    // Convert HEX colour to LAB colour space.
+    // Adapted from: https://github.com/antimatter15/rgb-lab
+    function hex2lab(hex: string): number[] {
+      hex = hex.replace(/^#|^0x/, '');
+
+      let r = parseInt(hex.slice(0, 2), 16) / 255;
+      let g = parseInt(hex.slice(2, 4), 16) / 255;
+      let b = parseInt(hex.slice(4), 16) / 255;
+
+      r = (r > 0.04045) ? Math.pow((r + 0.055) / 1.055, 2.4) : r / 12.92;
+      g = (g > 0.04045) ? Math.pow((g + 0.055) / 1.055, 2.4) : g / 12.92;
+      b = (b > 0.04045) ? Math.pow((b + 0.055) / 1.055, 2.4) : b / 12.92;
+
+      let x = (r * 0.4124 + g * 0.3576 + b * 0.1805) / 0.95047;
+      let y = (r * 0.2126 + g * 0.7152 + b * 0.0722) / 1.00000;
+      let z = (r * 0.0193 + g * 0.1192 + b * 0.9505) / 1.08883;
+
+      x = (x > 0.008856) ? Math.pow(x, 1 / 3) : (7.787 * x) + 16 / 116;
+      y = (y > 0.008856) ? Math.pow(y, 1 / 3) : (7.787 * y) + 16 / 116;
+      z = (z > 0.008856) ? Math.pow(z, 1 / 3) : (7.787 * z) + 16 / 116;
+
+      return [(116 * y) - 16, 500 * (x - y), 200 * (y - z)];
+    }
+
+    // Find the perceptual colour distance between two LAB colours.
+    function deltaE(labA: number[], labB: number[]): number {
+      const deltaL = labA[0] - labB[0];
+      const deltaA = labA[1] - labB[1];
+      const deltaB = labA[2] - labB[2];
+
+      return Math.sqrt(Math.pow(deltaL, 2) +
+                       Math.pow(deltaA, 2) +
+                       Math.pow(deltaB, 2));
+    }
+
+    // Returns the layout based on the connected watch.
+    function autoLayout(): (string | boolean)[][] {
+      const bwWatches = ['aplite', 'diorite', 'flint'];
+      if (!clay.meta.activeWatchInfo ||
+          clay.meta.activeWatchInfo.firmware.major === 2 ||
+          bwWatches.indexOf(clay.meta.activeWatchInfo.platform) > -1 &&
+          !self.config.allowGray) {
+        return standardLayouts.BLACK_WHITE;
+      }
+
+      if (bwWatches.indexOf(clay.meta.activeWatchInfo.platform) > -1 &&
+          self.config.allowGray) {
+        return standardLayouts.GRAY;
+      }
+
+      return standardLayouts.COLOR;
+    }
+
+    self.roundColorToLayout = function(color: number | string): number {
+      let itemValue = normalizeColor(color);
+
+      // if the color is not in the layout we will need find the closest match
+      if (colorList.indexOf(itemValue) === -1) {
+        const itemValueLAB = hex2lab(itemValue);
+        const differenceArr = colorList.map(function(color) {
+          const colorLAB = hex2lab(normalizeColor(color));
+          return deltaE(itemValueLAB, colorLAB);
+        });
+
+        // Get the lowest number from the differenceArray
+        const lowest = Math.min.apply(Math, differenceArr);
+
+        // Get the index for that lowest number
+        const index = differenceArr.indexOf(lowest);
+        itemValue = colorList[index];
+      }
+
+      return parseInt(itemValue, 16);
+    };
+
+    const useSunlight = self.config.sunlight !== false;
+    const sunlightColorMap: Record<string, string> = {
+      '000000': '000000', '000055': '001e41', '0000aa': '004387', '0000ff': '0068ca',
+      '005500': '2b4a2c', '005555': '27514f', '0055aa': '16638d', '0055ff': '007dce',
+      '00aa00': '5e9860', '00aa55': '5c9b72', '00aaaa': '57a5a2', '00aaff': '4cb4db',
+      '00ff00': '8ee391', '00ff55': '8ee69e', '00ffaa': '8aebc0', '00ffff': '84f5f1',
+      '550000': '4a161b', '550055': '482748', '5500aa': '40488a', '5500ff': '2f6bcc',
+      '555500': '564e36', '555555': '545454', '5555aa': '4f6790', '5555ff': '4180d0',
+      '55aa00': '759a64', '55aa55': '759d76', '55aaaa': '71a6a4', '55aaff': '69b5dd',
+      '55ff00': '9ee594', '55ff55': '9de7a0', '55ffaa': '9becc2', '55ffff': '95f6f2',
+      'aa0000': '99353f', 'aa0055': '983e5a', 'aa00aa': '955694', 'aa00ff': '8f74d2',
+      'aa5500': '9d5b4d', 'aa5555': '9d6064', 'aa55aa': '9a7099', 'aa55ff': '9587d5',
+      'aaaa00': 'afa072', 'aaaa55': 'aea382', 'aaaaaa': 'ababab', 'ffffff': 'ffffff',
+      'aaaaff': 'a7bae2', 'aaff00': 'c9e89d', 'aaff55': 'c9eaa7', 'aaffaa': 'c7f0c8',
+      'aaffff': 'c3f9f7', 'ff0000': 'e35462', 'ff0055': 'e25874', 'ff00aa': 'e16aa3',
+      'ff00ff': 'de83dc', 'ff5500': 'e66e6b', 'ff5555': 'e6727c', 'ff55aa': 'e37fa7',
+      'ff55ff': 'e194df', 'ffaa00': 'f1aa86', 'ffaa55': 'f1ad93', 'ffaaaa': 'efb5b8',
+      'ffaaff': 'ecc3eb', 'ffff00': 'ffeeab', 'ffff55': 'fff1b5', 'ffffaa': 'fff6d3'
+    };
+
+    /* eslint-disable  comma-spacing, no-multi-spaces, max-len,
+     standard/array-bracket-even-spacing */
+    const standardLayouts: Record<string, (string | boolean)[][]> = {
+      COLOR: [
+        [false   , false   , '55ff00', 'aaff55', false   , 'ffff55', 'ffffaa', false   , false   ],
+        [false   , 'aaffaa', '55ff55', '00ff00', 'aaff00', 'ffff00', 'ffaa55', 'ffaaaa', false   ],
+        ['55ffaa', '00ff55', '00aa00', '55aa00', 'aaaa55', 'aaaa00', 'ffaa00', 'ff5500', 'ff5555'],
+        ['aaffff', '00ffaa', '00aa55', '55aa55', '005500', '555500', 'aa5500', 'ff0000', 'ff0055'],
+        [false   , '55aaaa', '00aaaa', '005555', 'ffffff', '000000', 'aa5555', 'aa0000', false   ],
+        ['55ffff', '00ffff', '00aaff', '0055aa', 'aaaaaa', '555555', '550000', 'aa0055', 'ff55aa'],
+        ['55aaff', '0055ff', '0000ff', '0000aa', '000055', '550055', 'aa00aa', 'ff00aa', 'ffaaff'],
+        [false   , '5555aa', '5555ff', '5500ff', '5500aa', 'aa00ff', 'ff00ff', 'ff55ff', false   ],
+        [false   , false   , false   , 'aaaaff', 'aa55ff', 'aa55aa', false   , false   , false   ]
+      ],
+      GRAY: [
+        ['000000', 'aaaaaa', 'ffffff']
+      ],
+      BLACK_WHITE: [
+        ['000000', 'ffffff']
+      ]
+    };
+    /* eslint-enable */
+
+    function isLayoutGrid(val: unknown): val is (string | boolean)[][] {
+      return Array.isArray(val) && (val.length === 0 || Array.isArray(val[0]));
+    }
+
+    function isLayoutRow(val: unknown): val is (string | boolean)[] {
+      return Array.isArray(val) && (val.length === 0 || !Array.isArray(val[0]));
+    }
+
+    const configLayout = self.config.layout;
+    let layout: (string | boolean)[][] = autoLayout();
+
+    if (configLayout) {
+      if (typeof configLayout === 'string') {
+        layout = standardLayouts[configLayout];
+      } else if (isLayoutGrid(configLayout)) {
+        layout = configLayout;
+      } else if (isLayoutRow(configLayout)) {
+        layout = [configLayout];
+      }
+    }
+
+    const colorList = flattenLayout(layout).map(function(item) {
+      return normalizeColor(item);
+    }).filter(function(item) {
+      return item;
+    });
+
+    let grid = '';
+    const rows = layout.length;
+    let cols = 0;
+    layout.forEach(function(row: (string | boolean)[]) {
+      cols = row.length > cols ? row.length : cols;
+    });
+    const itemWidth = 100 / cols;
+    const itemHeight = 100 / rows;
+    const $elem = self.$element;
+
+    for (let i = 0; i < rows; i++) {
+      for (let j = 0; j < cols; j++) {
+
+        const color = normalizeColor(layout[i][j]);
+        const selectable = (color ? ' selectable' : '');
+
+        const roundedTL = (i === 0 && j === 0) || i === 0 && !layout[i][j - 1] ||
+                        !layout[i][j - 1] && !layout[i - 1][j] ?
+          ' rounded-tl' :
+          '';
+
+        const roundedTR = i === 0 && !layout[i][j + 1] ||
+                        !layout[i][j + 1] && !layout[i - 1][j] ?
+          ' rounded-tr ' :
+          '';
+
+        const roundedBL = (i === layout.length - 1 && j === 0) ||
+                        i === layout.length - 1 && !layout[i][j - 1] ||
+                        !layout[i][j - 1] && !layout[i + 1][j] ?
+          ' rounded-bl' :
+          '';
+
+        const roundedBR = i === layout.length - 1 && !layout[i][j + 1] ||
+                        !layout[i][j + 1] && !layout[i + 1][j] ?
+          ' rounded-br' :
+          '';
+
+        grid += '<i ' +
+          'class="color-box ' + selectable + roundedTL + roundedTR + roundedBL +
+              roundedBR + '" ' +
+          (color ? 'data-value="' + parseInt(color, 16) + '" ' : '') +
+          'style="' +
+            'width:' + itemWidth + '%; ' +
+            'height:' + itemHeight + '%; ' +
+            'background:' + cssColor(color) + ';">' +
+        '</i>';
+      }
+    }
+
+    // on very small layouts the boxes end up huge. The following adds extra padding
+    // to prevent them from being so big.
+    let extraPadding = 0;
+    if (cols === 3) {
+      extraPadding = 5;
+    }
+    if (cols === 2) {
+      extraPadding = 8;
+    }
+    const vPadding = (extraPadding * itemWidth / itemHeight) + '%';
+    const hPadding = extraPadding + '%';
+    $elem.select('.color-box-container')
+      .add(HTML(grid))
+      .set('$paddingTop', vPadding)
+      .set('$paddingRight', hPadding)
+      .set('$paddingBottom', vPadding)
+      .set('$paddingLeft', hPadding);
+
+    $elem.select('.color-box-wrap').set(
+      '$paddingBottom',
+      (itemWidth / itemHeight * 100) + '%'
+    );
+
+    const $valueDisplay = $elem.select('.value');
+    const $picker = $elem.select('.picker-wrap');
+    let disabled = self.$manipulatorTarget.get('disabled');
+
+    $elem.select('label').on('click', function() {
+      if (!disabled) {
+        $picker.set('show'); // toggle visibility
+      }
+    });
+
+    self.on('change', function() {
+      const rawValue = self.get();
+      const value = typeof rawValue === 'number' || typeof rawValue === 'string' || typeof rawValue === 'boolean' ? rawValue : undefined;
+      $valueDisplay.set('$background-color', cssColor(value));
+      $elem.select('.color-box').set('-selected');
+      $elem.select('.color-box[data-value="' + value + '"]').set('+selected');
+    });
+
+    $elem.select('.color-box.selectable').on('click', function(ev: unknown) {
+      if (ev && typeof ev === 'object' && 'target' in ev) {
+        const target = ev.target;
+        if (target && typeof target === 'object' && 'dataset' in target) {
+          const dataset = target.dataset;
+          if (dataset && typeof dataset === 'object' && 'value' in dataset) {
+            const valueStr = dataset.value;
+            if (typeof valueStr === 'string') {
+              self.set(parseInt(valueStr, 10));
+              $picker.set('-show');
+            }
+          }
+        }
+      }
+    });
+
+    $picker.on('click', function() {
+      $picker.set('-show');
+    });
+
+    self.on('disabled', function() {
+      disabled = true;
+    });
+
+    self.on('enabled', function() {
+      disabled = false;
+    });
+
+    // expose layout for testing
+    self._layout = layout;
+  }
+};
