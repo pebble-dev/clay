@@ -1,6 +1,8 @@
 'use strict';
 
-module.exports = {
+import { ClayItemInstance } from '../lib/types';
+
+export = {
   name: 'select',
   template: require('../../templates/components/select.tpl'),
   style: require('../../../tmp/select.css'),
@@ -11,19 +13,16 @@ module.exports = {
     description: '',
     attributes: {}
   },
-  initialize: function() {
-    var self = this;
+  initialize: function(this: ClayItemInstance) {
+    const self = this;
 
-    var $value = self.$element.select('.value');
+    const $value = self.$element.select('.value');
 
-    /**
-     * Updates the HTML value of the component to match the slected option's label
-     * @return {void}
-     */
+    // Updates the HTML value of the component to match the slected option's label
     function setValueDisplay() {
-      var selectedIndex = self.$manipulatorTarget.get('selectedIndex');
-      var $options = self.$manipulatorTarget.select('option');
-      var value = $options[selectedIndex] && $options[selectedIndex].innerHTML;
+      const selectedIndex = self.$manipulatorTarget.get('selectedIndex');
+      const $options = self.$manipulatorTarget.select('option');
+      const value = $options[selectedIndex] && $options[selectedIndex].innerHTML;
       $value.set('innerHTML', value);
     }
 

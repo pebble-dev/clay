@@ -1,6 +1,8 @@
 'use strict';
 
-module.exports = {
+import { ClayItemInstance, ClayConfigInstance } from '../lib/types';
+
+export = {
   name: 'color',
   template: require('../../templates/components/color.tpl'),
   style: require('../../../tmp/color.css'),
@@ -9,18 +11,19 @@ module.exports = {
     label: '',
     description: ''
   },
-  initialize: function(minified, clay) {
+  initialize: function(this: ClayItemInstance, minified: unknown, clay: ClayConfigInstance): void {
     var HTML = minified.HTML;
     var self = this;
 
-    /**
-     * @param {string|boolean|number} color
-     * @returns {string}
-     */
-    function cssColor(color) {
+    // Converts a color value to a CSS-format string, applying sunlight mapping if enabled.
+    function cssColor(color: string | number | boolean | undefined): string {
       if (typeof color === 'number') {
         color = color.toString(16);
       } else if (!color) {
+        return 'transparent';
+      }
+
+      if (typeof color !== 'string') {
         return 'transparent';
       }
 
@@ -29,11 +32,8 @@ module.exports = {
       return '#' + (useSunlight ? sunlightColorMap[color] : color);
     }
 
-    /**
-     * @param {string} color
-     * @return {string}
-     */
-    function padColorString(color) {
+    // Pads a color string to 6 characters by prepending zeros.
+    function padColorString(color: string): string {
       color = color.toLowerCase();
 
       while (color.length < 6) {
@@ -43,35 +43,25 @@ module.exports = {
       return color;
     }
 
-    /**
-     * @param {number|string} value
-     * @returns {string|*}
-     */
-    function normalizeColor(value) {
+    // Normalises a color value to a hexadecimal string without #/0x prefix.
+    function normalizeColor(value: unknown): string {
       switch (typeof value) {
         case 'number': return padColorString(value.toString(16));
         case 'string': return value.replace(/^#|^0x/, '');
-        default: return value;
+        default: return '';
       }
     }
 
-    /**
-     * @param {Array.<Array>} layout
-     * @returns {Array}
-     */
-    function flattenLayout(layout) {
+    // Flattens a 2D layout array into a 1D array.
+    function flattenLayout(layout: (string | boolean)[][]): (string | boolean)[] {
       return layout.reduce(function(a, b) {
         return a.concat(b);
       }, []);
     }
 
-    /**
-     * Convert HEX color to LAB.
-     * Adapted from: https://github.com/antimatter15/rgb-lab
-     * @param {string} hex
-     * @returns {Array} - [l, a, b]
-     */
-    function hex2lab(hex) {
+    // Convert HEX colour to LAB colour space.
+    // Adapted from: https://github.com/antimatter15/rgb-lab
+    function hex2lab(hex: string): number[] {
       hex = hex.replace(/^#|^0x/, '');
 
       var r = parseInt(hex.slice(0, 2), 16) / 255;
@@ -93,13 +83,8 @@ module.exports = {
       return [(116 * y) - 16, 500 * (x - y), 200 * (y - z)];
     }
 
-    /**
-     * Find the perceptual color distance between two LAB colors
-     * @param {Array} labA
-     * @param {Array} labB
-     * @returns {number}
-     */
-    function deltaE(labA, labB) {
+    // Find the perceptual colour distance between two LAB colours.
+    function deltaE(labA: number[], labB: number[]): number {
       var deltaL = labA[0] - labB[0];
       var deltaA = labA[1] - labB[1];
       var deltaB = labA[2] - labB[2];
@@ -109,11 +94,8 @@ module.exports = {
                        Math.pow(deltaB, 2));
     }
 
-    /**
-     * Returns the layout based on the connected watch
-     * @returns {Array}
-     */
-    function autoLayout() {
+    // Returns the layout based on the connected watch.
+    function autoLayout(): (string | boolean)[][] {
       var bwWatches = ['aplite', 'diorite', 'flint'];
       if (!clay.meta.activeWatchInfo ||
           clay.meta.activeWatchInfo.firmware.major === 2 ||
@@ -130,11 +112,7 @@ module.exports = {
       return standardLayouts.COLOR;
     }
 
-    /**
-     * @param {number|string} color
-     * @return {number}
-     */
-    self.roundColorToLayout = function(color) {
+    self.roundColorToLayout = function(color: number | string): number {
       var itemValue = normalizeColor(color);
 
       // if the color is not in the layout we will need find the closest match
@@ -157,7 +135,7 @@ module.exports = {
     };
 
     var useSunlight = self.config.sunlight !== false;
-    var sunlightColorMap = {
+    var sunlightColorMap: Record<string, string> = {
       '000000': '000000', '000055': '001e41', '0000aa': '004387', '0000ff': '0068ca',
       '005500': '2b4a2c', '005555': '27514f', '0055aa': '16638d', '0055ff': '007dce',
       '00aa00': '5e9860', '00aa55': '5c9b72', '00aaaa': '57a5a2', '00aaff': '4cb4db',
@@ -178,7 +156,7 @@ module.exports = {
 
     /* eslint-disable  comma-spacing, no-multi-spaces, max-len,
      standard/array-bracket-even-spacing */
-    var standardLayouts = {
+    var standardLayouts: Record<string, (string | boolean)[][]> = {
       COLOR: [
         [false   , false   , '55ff00', 'aaff55', false   , 'ffff55', 'ffffaa', false   , false   ],
         [false   , 'aaffaa', '55ff55', '00ff00', 'aaff00', 'ffff00', 'ffaa55', 'ffaaaa', false   ],
@@ -219,7 +197,7 @@ module.exports = {
     var grid = '';
     var rows = layout.length;
     var cols = 0;
-    layout.forEach(function(row) {
+    layout.forEach(function(row: (string | boolean)[]) {
       cols = row.length > cols ? row.length : cols;
     });
     var itemWidth = 100 / cols;
@@ -305,9 +283,20 @@ module.exports = {
       $elem.select('.color-box[data-value="' + value + '"]').set('+selected');
     });
 
-    $elem.select('.color-box.selectable').on('click', function(ev) {
-      self.set(parseInt(ev.target.dataset.value, 10));
-      $picker.set('-show');
+    $elem.select('.color-box.selectable').on('click', function(ev: unknown) {
+      if (ev && typeof ev === 'object' && 'target' in ev) {
+        const target = ev.target;
+        if (target && typeof target === 'object' && 'dataset' in target) {
+          const dataset = target.dataset;
+          if (dataset && typeof dataset === 'object' && 'value' in dataset) {
+            const valueStr = dataset.value;
+            if (typeof valueStr === 'string') {
+              self.set(parseInt(valueStr, 10));
+              $picker.set('-show');
+            }
+          }
+        }
+      }
     });
 
     $picker.on('click', function() {
