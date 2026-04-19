@@ -114,6 +114,17 @@ function taskClay() {
 
 gulp.task('clay', gulp.series('inlineHtml', taskClay));
 
+// Validates the curated index.d.ts against test/type-checks.ts.
+// For per-file reference declarations in dist-types/, run: npm run build:types
+gulp.task('types', function(done) {
+  var exec = require('child_process').exec;
+  exec('npx tsc -p tsconfig.typecheck.json', function(err, stdout, stderr) {
+    if (stdout) { console.log(stdout); }
+    if (stderr) { console.error(stderr); }
+    done(err);
+  });
+});
+
 /**
 * @returns {string}
 */
@@ -130,7 +141,7 @@ function taskDevJs() {
 
 gulp.task('dev-js', gulp.series('js', 'sass', taskDevJs));
 
-gulp.task('default', gulp.series('clay'));
+gulp.task('default', gulp.series('clay', 'types'));
 
 /**
 * @returns {string}
