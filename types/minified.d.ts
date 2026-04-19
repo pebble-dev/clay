@@ -1,6 +1,6 @@
 // Global type declarations for the vendored minified.js library.
-// These are separate from the module declaration in src/scripts/vendor/minified.d.ts
-// because that directory is excluded from tsconfig.
+// The module declaration (export =) lives in src/scripts/vendor/minified.d.ts
+// for tsify resolution. These globals are needed by tsc for type-checking.
 
 interface M {
   [index: number]: HTMLElement;

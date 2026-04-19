@@ -11,6 +11,12 @@ declare module '*.css' {
   export default content;
 }
 
+// Build artefact inlined by browserify stringify transform
+declare module '*/config-page.html' {
+  const html: string;
+  export = html;
+}
+
 // Ambient require for browserify-resolved assets.
 // Returns string because the primary use is for .tpl and .css files
 // stringified at bundle time. For typed modules, use import = require().
