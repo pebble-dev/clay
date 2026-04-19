@@ -2,5 +2,5 @@
 /**/*
 !/dist.zip
 !/src/**/*
-!/index.js
-!/index.d.ts
+!/index.ts
+!/dist-types/**/*
