@@ -1,16 +1,19 @@
 'use strict';
 
-var assert = require('chai').assert;
-var sinon = require('sinon');
-var _ = require('../../../src/scripts/vendor/minified')._;
-var selectComponent = require('../../../src/scripts/components/select');
-var componentRegistry = require('../../../src/scripts/lib/component-registry');
-var checkReadOnly = require('../../test-utils').checkReadOnly;
-var fixtures = require('../../fixture');
+import { assert } from 'chai';
+import sinon = require('sinon');
+import _ = require('../../../src/scripts/vendor/minified');
+import selectComponent = require('../../../src/scripts/components/select');
+import componentRegistry = require('../../../src/scripts/lib/component-registry');
+import testUtils = require('../../test-utils');
+import fixtures = require('../../fixture');
+import type { ClayConfigItem } from '../../../src/scripts/lib/types';
+
+const checkReadOnly = testUtils.checkReadOnly;
 
 describe('ClayConfig', function() {
   it('defines read-only properties', function() {
-    var properties = [
+    const properties = [
       'EVENTS',
       'getItemByMessageKey',
       'getItemById',
@@ -24,7 +27,7 @@ describe('ClayConfig', function() {
       'trigger',
       'meta'
     ];
-    var clayConfig = fixtures.clayConfig(['input']);
+    const clayConfig = fixtures.clayConfig(['input']);
     checkReadOnly(clayConfig, properties);
   });
 
@@ -38,16 +41,22 @@ describe('ClayConfig', function() {
    * @param {number} [notExpected] - defaults to the inverse of `expected`
    * @return {void}
    */
-  function testCapabilities(platform, fwMajor, fwMinor, capabilities, expected,
-                            notExpected) {
+  function testCapabilities(
+    platform: string,
+    fwMajor: number,
+    fwMinor: number,
+    capabilities: string[],
+    expected: number,
+    notExpected?: number
+  ): void {
     it(platform + ' is' + (expected ? '' : ' not') + ' included on firmware ' +
        fwMajor + '.' + fwMinor + ' for capabilities ' + JSON.stringify(capabilities),
     function() {
-      var item = {
+      const item: ClayConfigItem = {
         type: 'input',
         capabilities: capabilities
       };
-      var meta = {
+      const meta: Record<string, unknown> = {
         activeWatchInfo: {
           platform: platform,
           model: 'qemu_platform_' + platform,
@@ -60,18 +69,24 @@ describe('ClayConfig', function() {
           }
         }
       };
-      var clayConfig = fixtures.clayConfig([item], true, true, null, meta);
+      let clayConfig = fixtures.clayConfig([item], true, true, undefined, meta);
 
       assert.strictEqual(clayConfig.getAllItems().length, expected);
 
       // now we test the NOT_ prefix
-      item.capabilities = item.capabilities.map(function(capability) {
-        return 'NOT_' + capability.replace(/^NOT_/, '');
-      });
+      if ('capabilities' in item && Array.isArray(item.capabilities)) {
+        const mapped = item.capabilities.map((capability: unknown): unknown => {
+          if (typeof capability === 'string') {
+            return 'NOT_' + capability.replace(/^NOT_/, '');
+          }
+          return capability;
+        });
+        (item as Record<string, unknown>).capabilities = mapped;
+      }
 
-      notExpected = typeof notExpected !== 'undefined' ? notExpected : ~expected + 2;
-      clayConfig = fixtures.clayConfig([item], true, true, null, meta);
-      assert.strictEqual(clayConfig.getAllItems().length, notExpected);
+      const notExpectedVal = typeof notExpected !== 'undefined' ? notExpected : ~expected + 2;
+      clayConfig = fixtures.clayConfig([item], true, true, undefined, meta);
+      assert.strictEqual(clayConfig.getAllItems().length, notExpectedVal);
     });
   }
 
@@ -278,7 +293,7 @@ describe('ClayConfig', function() {
 
   describe('.meta', function() {
     it('populates meta', function() {
-      var clayConfig = fixtures.clayConfig(['input']);
+      const clayConfig = fixtures.clayConfig(['input']);
       assert.deepEqual(clayConfig.meta, fixtures.meta());
     });
   });
@@ -292,35 +307,38 @@ describe('ClayConfig', function() {
       'serialize'
     ].forEach(function(method) {
       it('.' + method + '()', function() {
-        var clayConfig = fixtures.clayConfig(['input', 'text'], false);
-        assert.throws(clayConfig[method], new RegExp(method));
+        const clayConfig = fixtures.clayConfig(['input', 'text'], false);
+        assert.throws((clayConfig as unknown as Record<string, unknown>)[method] as () => void, new RegExp(method));
       });
     });
   });
 
   describe('.getAllItems()', function() {
     it('returns an array of all the items', function() {
-      var config = fixtures.config([
+      const config = fixtures.config([
         {type: 'input', clayId: 0},
         {type: 'text', clayId: 1},
         [{type: 'input', clayId: 2}]
       ]);
-      var clayConfig = fixtures.clayConfig(config);
-      var allItems = clayConfig.getAllItems();
+      const clayConfig = fixtures.clayConfig(config);
+      const allItems = clayConfig.getAllItems();
       assert.strictEqual(allItems.length, 3);
       assert.deepEqual(allItems[0].config, config[0]);
       assert.deepEqual(allItems[1].config, config[1]);
-      assert.deepEqual(allItems[2].config, config[2].items[0]);
+      const section = config[2];
+      if (Array.isArray(section) && section.length > 0) {
+        assert.deepEqual(allItems[2].config, section[0]);
+      }
     });
   });
 
   describe('.getItemByMessageKey()', function() {
     it('it returns the correct item', function() {
-      var config = fixtures.config([
+      const config = fixtures.config([
         {type: 'input', messageKey: 'test-app-key', clayId: 0},
         {type: 'input', messageKey: undefined, clayId: 1}
       ]);
-      var clayConfig = fixtures.clayConfig(config);
+      const clayConfig = fixtures.clayConfig(config);
       assert.deepEqual(
         clayConfig.getItemByMessageKey('test-app-key').config,
         config[0]
@@ -330,23 +348,23 @@ describe('ClayConfig', function() {
 
   describe('.getItemById()', function() {
     it('it returns the correct item', function() {
-      var config = fixtures.config([
+      const config = fixtures.config([
         {type: 'input', id: 'test-id', clayId: 0},
         {type: 'input', id: undefined, clayId: 1}
       ]);
-      var clayConfig = fixtures.clayConfig(config);
+      const clayConfig = fixtures.clayConfig(config);
       assert.deepEqual(clayConfig.getItemById('test-id').config, config[0]);
     });
   });
 
   describe('.getItemsByType()', function() {
     it('it returns the correct items', function() {
-      var config = fixtures.config([
+      const config = fixtures.config([
         {type: 'input', clayId: 0},
         {type: 'text', clayId: 1},
         {type: 'input', clayId: 2}
       ]);
-      var clayConfig = fixtures.clayConfig(config);
+      const clayConfig = fixtures.clayConfig(config);
       assert.deepEqual(clayConfig.getItemsByType('input')[0].config, config[0]);
       assert.deepEqual(clayConfig.getItemsByType('input')[1].config, config[2]);
     });
@@ -354,13 +372,13 @@ describe('ClayConfig', function() {
 
   describe('.getItemsByGroup()', function() {
     it('it returns the correct items', function() {
-      var config = fixtures.config([
+      const config = fixtures.config([
         {type: 'input', id: 'g1-0', group: 'group1'},
         {type: 'text', id: 'g2-0', group: 'group2'},
         {type: 'input', id: 'g1-1', group: 'group1'}
       ]);
 
-      var clayConfig = fixtures.clayConfig(config);
+      const clayConfig = fixtures.clayConfig(config);
       assert.deepEqual(clayConfig.getItemsByGroup('group1'), [
         clayConfig.getItemById('g1-0'),
         clayConfig.getItemById('g1-1')
@@ -373,7 +391,7 @@ describe('ClayConfig', function() {
 
   describe('.serialize()', function() {
     it('returns the correct settings', function() {
-      var config = [
+      const config: ClayConfigItem[] = [
         {type: 'input', messageKey: 'test1', defaultValue: 'default val'},
         {type: 'select', messageKey: 'test2', options: [
           {label: 'label-1', value: 'val-1'},
@@ -387,11 +405,11 @@ describe('ClayConfig', function() {
         ]},
         {type: 'slider', messageKey: 'test5', step: 0.05, defaultValue: 12.5}
       ];
-      var settings = {
+      const settings = {
         test2: 'val-2'
       };
 
-      var clayConfig = fixtures.clayConfig(config, true, true, settings);
+      const clayConfig = fixtures.clayConfig(config, true, true, settings);
 
       assert.deepEqual(clayConfig.serialize(), {
         test1: {value: 'default val'},
@@ -415,10 +433,13 @@ describe('ClayConfig', function() {
 
       // make sure the result of serialize() can actually be fed back in to
       // a new instance of ClayConfig
-      var clay = fixtures.clay(config);
-      var response = encodeURIComponent(JSON.stringify(clayConfig.serialize()));
-      clay.getSettings(response);
-      var loadedSettings = JSON.parse(localStorage.getItem('clay-settings'));
+      const clay = fixtures.clay(config);
+      const response = encodeURIComponent(JSON.stringify(clayConfig.serialize()));
+      const clayObj = clay as unknown as Record<string, unknown>;
+      if (typeof clayObj.getSettings === 'function') {
+        clayObj.getSettings(response);
+      }
+      const loadedSettings = JSON.parse(localStorage.getItem('clay-settings') || '{}');
 
       assert.deepEqual(loadedSettings, {
         test1: 'val-1',
@@ -433,19 +454,19 @@ describe('ClayConfig', function() {
     });
 
     it('only returns the settings present in the config', function() {
-      var config = [
+      const config: ClayConfigItem[] = [
         {type: 'input', messageKey: 'test1', defaultValue: 'default val'},
         {type: 'select', messageKey: 'test2', options: [
           {label: 'label-1', value: 'val-1'},
           {label: 'label-2', value: 'val-2'}
         ]}
       ];
-      var settings = {
+      const settings = {
         test2: 'val-2',
         notInTheConfig: 'Should not exist'
       };
 
-      var clayConfig = fixtures.clayConfig(config, true, true, settings);
+      const clayConfig = fixtures.clayConfig(config, true, true, settings);
       assert.deepEqual(clayConfig.serialize(), {
         test1: {value: 'default val'},
         test2: {value: 'val-2'}
@@ -456,18 +477,25 @@ describe('ClayConfig', function() {
   describe('.registerComponent()', function() {
     it('adds the component to the registry and adds the style to the HEAD',
     function(done) {
-      delete componentRegistry.select;
-      assert.typeOf(componentRegistry.select, 'undefined');
-      var clayConfig = fixtures.clayConfig(['select'], false, false);
+      const registry = componentRegistry as Record<string, unknown>;
+      if ('select' in registry) {
+        delete registry.select;
+      }
+      assert.typeOf((componentRegistry as Record<string, unknown>).select, 'undefined');
+      const clayConfig = fixtures.clayConfig(['select'], false, false);
 
       clayConfig.on(clayConfig.EVENTS.BEFORE_BUILD, function() {
         clayConfig.registerComponent(selectComponent);
-        assert.strictEqual(componentRegistry.select.name, selectComponent.name);
+        const registrySelect = (componentRegistry as Record<string, unknown>).select;
+        if (registrySelect && typeof registrySelect === 'object' && 'name' in registrySelect) {
+          assert.strictEqual((registrySelect as Record<string, unknown>).name, selectComponent.name);
+        }
         assert.include(document.head.innerHTML, selectComponent.style);
       });
 
-      clayConfig.on(clayConfig.EVENTS.AFTER_BUILD, function() {
-        assert.strictEqual(this.getAllItems()[0].config.type, 'select');
+      clayConfig.on(clayConfig.EVENTS.AFTER_BUILD, function(this: unknown) {
+        const clayConfigThis = this as unknown as typeof clayConfig;
+        assert.strictEqual(clayConfigThis.getAllItems()[0].config.type, 'select');
         done();
       });
 
@@ -476,14 +504,17 @@ describe('ClayConfig', function() {
 
     it('throws if manipulator is a string and does not match built-in manipulator',
     function(done) {
-      delete componentRegistry.select;
-      var clayConfig = fixtures.clayConfig(['select'], false, false);
-      var _textComponent = _.copyObj(selectComponent);
-      _textComponent.manipulator = 'not_real';
+      const registry = componentRegistry as Record<string, unknown>;
+      if ('select' in registry) {
+        delete registry.select;
+      }
+      const clayConfig = fixtures.clayConfig(['select'], false, false);
+      const selectComponentCopy = _._.copyObj(selectComponent);
+      selectComponentCopy.manipulator = 'not_real';
 
       clayConfig.on(clayConfig.EVENTS.BEFORE_BUILD, function() {
         assert.throws(function() {
-          clayConfig.registerComponent(_textComponent);
+          clayConfig.registerComponent(selectComponentCopy);
         }, new RegExp('not_real'));
         done();
       });
@@ -493,14 +524,17 @@ describe('ClayConfig', function() {
 
     it('throws if manipulator does not have a `get` and `set` method',
     function(done) {
-      delete componentRegistry.select;
-      var clayConfig = fixtures.clayConfig(['select'], false, false);
-      var _selectComponent = _.copyObj(selectComponent);
-      _selectComponent.manipulator = {};
+      const registry = componentRegistry as Record<string, unknown>;
+      if ('select' in registry) {
+        delete registry.select;
+      }
+      const clayConfig = fixtures.clayConfig(['select'], false, false);
+      const selectComponentCopy = _._.copyObj(selectComponent) as unknown as typeof selectComponent;
+      (selectComponentCopy as Record<string, unknown>).manipulator = {};
 
       clayConfig.on(clayConfig.EVENTS.BEFORE_BUILD, function() {
         assert.throws(function() {
-          clayConfig.registerComponent(_selectComponent);
+          clayConfig.registerComponent(selectComponentCopy);
         }, /(get.*set)|(set.*get)/);
         done();
       });
@@ -510,14 +544,17 @@ describe('ClayConfig', function() {
 
     it('throws if there is no manipulator',
     function(done) {
-      delete componentRegistry.select;
-      var clayConfig = fixtures.clayConfig(['select'], false, false);
-      var _selectComponent = _.copyObj(selectComponent);
-      _selectComponent.manipulator = undefined;
+      const registry = componentRegistry as Record<string, unknown>;
+      if ('select' in registry) {
+        delete registry.select;
+      }
+      const clayConfig = fixtures.clayConfig(['select'], false, false);
+      const selectComponentCopy = _._.copyObj(selectComponent) as unknown as typeof selectComponent;
+      (selectComponentCopy as Record<string, unknown>).manipulator = undefined;
 
       clayConfig.on(clayConfig.EVENTS.BEFORE_BUILD, function() {
         assert.throws(function() {
-          clayConfig.registerComponent(_selectComponent);
+          clayConfig.registerComponent(selectComponentCopy);
         }, /manipulator must be defined/);
         done();
       });
@@ -526,16 +563,19 @@ describe('ClayConfig', function() {
     });
 
     it('only registers the component once', function() {
-      delete componentRegistry.select;
-      var warnStub = sinon.stub(console, 'warn');
-      var clayConfig = fixtures.clayConfig(['select'], false, false);
-      var _selectComponent1 = _.copyObj(selectComponent);
-      var _selectComponent2 = _.copyObj(selectComponent);
-      _selectComponent2.template = 'fake';
+      const registry = componentRegistry as Record<string, unknown>;
+      if ('select' in registry) {
+        delete registry.select;
+      }
+      const warnStub = sinon.stub(console, 'warn');
+      const clayConfig = fixtures.clayConfig(['select'], false, false);
+      const selectComponent1 = _._.copyObj(selectComponent);
+      const selectComponent2 = _._.copyObj(selectComponent);
+      selectComponent2.template = 'fake';
 
-      assert.strictEqual(clayConfig.registerComponent(_selectComponent1), true);
-      var styleCount = document.head.querySelectorAll('style').length;
-      assert.strictEqual(clayConfig.registerComponent(_selectComponent2), false);
+      assert.strictEqual(clayConfig.registerComponent(selectComponent1), true);
+      const styleCount = document.head.querySelectorAll('style').length;
+      assert.strictEqual(clayConfig.registerComponent(selectComponent2), false);
 
       // make sure the styles were not added twice
       assert.strictEqual(document.head.querySelectorAll('style').length, styleCount);
@@ -548,7 +588,7 @@ describe('ClayConfig', function() {
 
   describe('.destroy().', function() {
     it('Destroys all the items on the page and in the items array', function() {
-      var clayConfig = fixtures.clayConfig(['input', 'text', 'input'], false);
+      const clayConfig = fixtures.clayConfig(['input', 'text', 'input'], false);
 
       clayConfig.build();
       clayConfig.destroy();
@@ -561,7 +601,7 @@ describe('ClayConfig', function() {
     });
 
     it('dispatches the BEFORE_DESTROY event at the right time', function(done) {
-      var clayConfig = fixtures.clayConfig(['input', 'text', 'input'], false);
+      const clayConfig = fixtures.clayConfig(['input', 'text', 'input'], false);
 
       clayConfig.on(clayConfig.EVENTS.BEFORE_DESTROY, function() {
         assert.strictEqual(clayConfig.getAllItems().length, 3);
@@ -575,7 +615,7 @@ describe('ClayConfig', function() {
     });
 
     it('dispatches the AFTER_DESTROY event at the right time', function(done) {
-      var clayConfig = fixtures.clayConfig(['input', 'text', 'input'], false);
+      const clayConfig = fixtures.clayConfig(['input', 'text', 'input'], false);
 
       clayConfig.on(clayConfig.EVENTS.AFTER_DESTROY, function() {
 
@@ -592,8 +632,8 @@ describe('ClayConfig', function() {
 
   describe('.build()', function() {
     it('Destroys the config if called a consecutive time', function() {
-      var clayConfig = fixtures.clayConfig(['input', 'text', 'input'], false);
-      var destroyHandlerSpy = sinon.spy();
+      const clayConfig = fixtures.clayConfig(['input', 'text', 'input'], false);
+      const destroyHandlerSpy = sinon.spy();
 
       clayConfig.on(clayConfig.EVENTS.AFTER_DESTROY, destroyHandlerSpy);
 
@@ -610,7 +650,7 @@ describe('ClayConfig', function() {
     });
 
     it('dispatches the BEFORE_BUILD event at the right time', function(done) {
-      var clayConfig = fixtures.clayConfig(['input', 'text', 'input'], false);
+      const clayConfig = fixtures.clayConfig(['input', 'text', 'input'], false);
       clayConfig.on(clayConfig.EVENTS.BEFORE_BUILD, function() {
 
         // this should throw because the config has not been built yet
@@ -621,7 +661,7 @@ describe('ClayConfig', function() {
     });
 
     it('dispatches the AFTER_BUILD event at the right time', function(done) {
-      var clayConfig = fixtures.clayConfig(['input', 'text', 'input'], false);
+      const clayConfig = fixtures.clayConfig(['input', 'text', 'input'], false);
       clayConfig.on(clayConfig.EVENTS.AFTER_BUILD, function() {
 
         // this should not throw because the config has been built

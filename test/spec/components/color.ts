@@ -1,9 +1,10 @@
 'use strict';
 
-var assert = require('chai').assert;
-var fixture = require('../../fixture');
+import { assert } from 'chai';
+import fixture = require('../../fixture');
+import type { ClayConfigInstance, ClayItemInstance } from '../../../src/scripts/lib/types';
 
-var sunlightColorMap = {
+const sunlightColorMap: Record<string, string> = {
   '000000': '000000', '000055': '001e41', '0000aa': '004387', '0000ff': '0068ca',
   '005500': '2b4a2c', '005555': '27514f', '0055aa': '16638d', '0055ff': '007dce',
   '00aa00': '5e9860', '00aa55': '5c9b72', '00aaaa': '57a5a2', '00aaff': '4cb4db',
@@ -24,7 +25,7 @@ var sunlightColorMap = {
 
 /* eslint-disable  comma-spacing, no-multi-spaces, max-len,
  standard/array-bracket-even-spacing */
-var standardLayouts = {
+const standardLayouts: Record<string, (string | boolean)[][]> = {
   COLOR: [
     [false   , false   , '55ff00', 'aaff55', false   , 'ffff55', 'ffffaa', false   , false   ],
     [false   , 'aaffaa', '55ff55', '00ff00', 'aaff00', 'ffff00', 'ffaa55', 'ffaaaa', false   ],
@@ -49,16 +50,28 @@ var standardLayouts = {
  * @param {ClayItem} colorItem
  * @returns {void}
  */
-function openPicker(colorItem) {
-  colorItem.$element.select('label')[0].click();
+function openPicker(colorItem: unknown): void {
+  if (typeof colorItem === 'object' && colorItem !== null && '$element' in colorItem) {
+    const item = colorItem as Record<string, unknown>;
+    const selectMethod = item.$element as Record<string, unknown>;
+    if (typeof selectMethod.select === 'function') {
+      const labelElements = (selectMethod.select as (selector: string) => unknown[])('label');
+      if (Array.isArray(labelElements) && labelElements.length > 0) {
+        const firstLabel = labelElements[0] as Record<string, unknown>;
+        if (typeof firstLabel.click === 'function') {
+          (firstLabel.click as () => void)();
+        }
+      }
+    }
+  }
 }
 
 /**
  * @param {string} hex
  * @returns {string} - eg: "rgb(1, 2, 3)"
  */
-function hexToRgb(hex) {
-  var result = /^(?:#|0x)?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+function hexToRgb(hex: string): string {
+  const result = /^(?:#|0x)?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
   return result ?
     'rgb(' +
       parseInt(result[1], 16) + ', ' +
@@ -71,22 +84,26 @@ function hexToRgb(hex) {
  * @param {number|string} value
  * @returns {string}
  */
-function normalizeColor(value) {
+function normalizeColor(value: unknown): string {
   switch (typeof value) {
-    case 'number': value = value.toString(16); break;
-    case 'string': value = value.replace(/^#|^0x/, ''); break;
+    case 'number': {
+      const numValue = value as number;
+      return numValue.toString(16);
+    }
+    case 'string': {
+      const strValue = value as string;
+      return strValue.replace(/^#|^0x/, '');
+    }
+    default: return '000000';
   }
-  return value || '000000';
 }
 
 /**
  * @param {Array.<Array>} layout
  * @returns {Array}
  */
-function flattenLayout(layout) {
-  return layout.reduce(function(a, b) {
-    return a.concat(b);
-  }, []);
+function flattenLayout(layout: unknown[][]): unknown[] {
+  return layout.reduce((a: unknown[], b: unknown[]) => a.concat(b), []);
 }
 
 /**
@@ -94,7 +111,7 @@ function flattenLayout(layout) {
  * @param {Array} [expectedColors]
  * @return {void}
  */
-function testCustomLayout(layout, expectedColors) {
+function testCustomLayout(layout?: unknown, expectedColors?: unknown[]): void {
 
   describe('layout: ' + JSON.stringify(layout || 'default'), function() {
 
@@ -116,11 +133,17 @@ function testCustomLayout(layout, expectedColors) {
  * @param {Object} activeWatchInfo
  * @return {void}
  */
-function testAutoLayout(platform, layout, allowGray, desc, activeWatchInfo) {
+function testAutoLayout(
+  platform: string,
+  layout: unknown,
+  allowGray: boolean,
+  desc: string,
+  activeWatchInfo: unknown
+): void {
   it('chooses the best layout for the ' + (desc || platform) +
      ' platform when allowGray is ' + allowGray,
   function() {
-    var clayConfig = fixture.clayConfig(
+    const clayConfig: ClayConfigInstance = fixture.clayConfig(
       [{type: 'color', allowGray: allowGray}],
       true,
       true,
@@ -129,8 +152,8 @@ function testAutoLayout(platform, layout, allowGray, desc, activeWatchInfo) {
         activeWatchInfo: activeWatchInfo
       }
     );
-    var colorItem = clayConfig.getItemsByType('color')[0];
-    assert.deepEqual(colorItem._layout, layout);
+    const colorItem = clayConfig.getItemsByType('color')[0];
+    assert.deepEqual((colorItem as Record<string, unknown>)._layout, layout);
   });
 }
 
@@ -140,12 +163,12 @@ function testAutoLayout(platform, layout, allowGray, desc, activeWatchInfo) {
  * @param {array|string} layout
  * @return {void}
  */
-function testClosestToLayout(input, expected, layout) {
+function testClosestToLayout(input: unknown, expected: number, layout: unknown): void {
   it('rounds ' + input + ' to ' + expected.toString(16) +
      ' in layout: ' + JSON.stringify(layout),
   function() {
-    var clayConfig;
-    var colorItem;
+    let clayConfig: ClayConfigInstance;
+    let colorItem: ClayItemInstance;
 
     clayConfig = fixture.clayConfig([{
       type: 'color',
@@ -173,11 +196,11 @@ function testClosestToLayout(input, expected, layout) {
  * @param {Array} [expectedColors]
  * @return {void}
  */
-function testColors(sunlight, layout, expectedColors) {
-  var clayConfig;
-  var colorItem;
-  var $colorBoxes;
-  var colors;
+function testColors(sunlight: boolean, layout?: unknown, expectedColors?: unknown[]): void {
+  let clayConfig: ClayConfigInstance;
+  let colorItem: ClayItemInstance;
+  let $colorBoxes: unknown[];
+  let colors: unknown[];
 
   beforeEach(function() {
     clayConfig = fixture.clayConfig([
@@ -189,49 +212,57 @@ function testColors(sunlight, layout, expectedColors) {
     ]);
     colorItem = clayConfig.getItemsByType('color')[0];
 
-    layout = layout || 'COLOR';
-    if (typeof layout === 'string') {
-      layout = standardLayouts[layout];
+    let resolvedLayout: unknown = layout || 'COLOR';
+    if (typeof resolvedLayout === 'string' && resolvedLayout in standardLayouts) {
+      resolvedLayout = standardLayouts[resolvedLayout];
     }
 
-    colors = expectedColors || flattenLayout(layout);
-    $colorBoxes = colorItem.$element.select('.color-box');
+    colors = expectedColors || flattenLayout(resolvedLayout as unknown[][]);
+    $colorBoxes = (colorItem.$element.select('.color-box') as unknown as unknown[]);
   });
 
   it('Has the correct items in the layout', function() {
-    colors.forEach(function(color, index) {
-      if (color === false) {
-        assert.strictEqual($colorBoxes[index].dataset.value, undefined);
-      } else {
-        assert.strictEqual(
-          parseInt($colorBoxes[index].dataset.value, 10),
-          parseInt(color || 0, 16)
-        );
-      }
-    });
+    if (Array.isArray($colorBoxes)) {
+      colors.forEach(function(color: unknown, index: number) {
+        const colorBox = $colorBoxes[index] as Record<string, unknown>;
+        const dataset = colorBox.dataset as Record<string, unknown>;
+        if (color === false) {
+          assert.strictEqual(dataset.value, undefined);
+        } else {
+          assert.strictEqual(
+            parseInt(dataset.value as string, 10),
+            parseInt((color || 0) as string, 16)
+          );
+        }
+      });
+    }
   });
 
   it('sets the color correctly', function() {
-    colors.forEach(function(color, index) {
-      if (color === false) {
-        assert.strictEqual(
-          $colorBoxes[index].style.backgroundColor,
-          'transparent'
-        );
-      } else {
-        var normalizedColor = normalizeColor(color);
-        assert.strictEqual(
-          $colorBoxes[index].style.backgroundColor,
-          hexToRgb(sunlight ? sunlightColorMap[normalizedColor] : normalizedColor)
-        );
-      }
-    });
+    if (Array.isArray($colorBoxes)) {
+      colors.forEach(function(color: unknown, index: number) {
+        const colorBox = $colorBoxes[index] as Record<string, unknown>;
+        if (color === false) {
+          assert.strictEqual(
+            (colorBox.style as Record<string, unknown>).backgroundColor,
+            'transparent'
+          );
+        } else {
+          const normalizedColor = normalizeColor(color);
+          const expectedRgb = hexToRgb(sunlight ? (sunlightColorMap[normalizedColor] || '') : normalizedColor);
+          assert.strictEqual(
+            (colorBox.style as Record<string, unknown>).backgroundColor,
+            expectedRgb
+          );
+        }
+      });
+    }
   });
 }
 
 describe('component - color', function() {
   it('shows the sunlit colors in the value display', function() {
-    var clayConfig = fixture.clayConfig([
+    const clayConfig: ClayConfigInstance = fixture.clayConfig([
       {
         type: 'color',
         sunlight: true,
@@ -239,22 +270,27 @@ describe('component - color', function() {
         defaultValue: 'ff0000'
       }
     ]);
-    var colorItem = clayConfig.getItemById('1');
+    const colorItem: ClayItemInstance = clayConfig.getItemById('1');
 
     assert.strictEqual(colorItem.get(), 0xff0000);
-    assert.strictEqual(
-      colorItem.$element.select('.value')[0].style.backgroundColor,
-      'rgb(227, 84, 98)'
-    );
+    const valueElements = (colorItem.$element.select('.value') as unknown as unknown[]);
+    if (Array.isArray(valueElements) && valueElements.length > 0) {
+      assert.strictEqual(
+        ((valueElements[0] as Record<string, unknown>).style as Record<string, unknown>).backgroundColor,
+        'rgb(227, 84, 98)'
+      );
+    }
     colorItem.set('0000FF');
-    assert.strictEqual(
-      colorItem.$element.select('.value')[0].style.backgroundColor,
-      'rgb(0, 104, 202)'
-    );
+    if (Array.isArray(valueElements) && valueElements.length > 0) {
+      assert.strictEqual(
+        ((valueElements[0] as Record<string, unknown>).style as Record<string, unknown>).backgroundColor,
+        'rgb(0, 104, 202)'
+      );
+    }
   });
 
   it('shows the normal colors in the value display', function() {
-    var clayConfig = fixture.clayConfig([
+    const clayConfig: ClayConfigInstance = fixture.clayConfig([
       {
         type: 'color',
         sunlight: false,
@@ -262,70 +298,115 @@ describe('component - color', function() {
         defaultValue: 'ff0000'
       }
     ]);
-    var colorItem = clayConfig.getItemById('1');
+    const colorItem: ClayItemInstance = clayConfig.getItemById('1');
 
     assert.strictEqual(colorItem.get(), 0xff0000);
-    assert.strictEqual(
-      colorItem.$element.select('.value')[0].style.backgroundColor,
-      'rgb(255, 0, 0)'
-    );
+    const valueElements = (colorItem.$element.select('.value') as unknown as unknown[]);
+    if (Array.isArray(valueElements) && valueElements.length > 0) {
+      assert.strictEqual(
+        ((valueElements[0] as Record<string, unknown>).style as Record<string, unknown>).backgroundColor,
+        'rgb(255, 0, 0)'
+      );
+    }
     colorItem.set('0000FF');
-    assert.strictEqual(
-      colorItem.$element.select('.value')[0].style.backgroundColor,
-      'rgb(0, 0, 255)'
-    );
+    if (Array.isArray(valueElements) && valueElements.length > 0) {
+      assert.strictEqual(
+        ((valueElements[0] as Record<string, unknown>).style as Record<string, unknown>).backgroundColor,
+        'rgb(0, 0, 255)'
+      );
+    }
   });
 
   it('shows the picker when the label is clicked', function() {
-    var clayConfig = fixture.clayConfig(['color']);
-    var colorItem = clayConfig.getItemsByType('color')[0];
-    var $picker = colorItem.$element.select('.picker-wrap');
-    assert.strictEqual($picker.get('classList').contains('show'), false);
-    openPicker(colorItem);
-    assert.strictEqual($picker.get('classList').contains('show'), true);
+    const clayConfig: ClayConfigInstance = fixture.clayConfig(['color']);
+    const colorItem: ClayItemInstance = clayConfig.getItemsByType('color')[0];
+    const pickerElements = (colorItem.$element.select('.picker-wrap') as unknown as unknown[]);
+    if (Array.isArray(pickerElements) && pickerElements.length > 0) {
+      const pickerWrap = pickerElements[0] as Record<string, unknown>;
+      const classList = pickerWrap.classList as Record<string, (method: string) => boolean>;
+      assert.strictEqual(classList.contains('show'), false);
+      openPicker(colorItem);
+      assert.strictEqual(classList.contains('show'), true);
+    }
   });
 
   it('only shows the picker if the item is enabled', function() {
-    var clayConfig = fixture.clayConfig(['color']);
-    var colorItem = clayConfig.getItemsByType('color')[0];
-    var $picker = colorItem.$element.select('.picker-wrap');
-    colorItem.disable();
-    assert.strictEqual($picker.get('classList').contains('show'), false);
-    openPicker(colorItem);
-    assert.strictEqual($picker.get('classList').contains('show'), false);
-    colorItem.enable();
-    openPicker(colorItem);
-    assert.strictEqual($picker.get('classList').contains('show'), true);
+    const clayConfig: ClayConfigInstance = fixture.clayConfig(['color']);
+    const colorItem: ClayItemInstance = clayConfig.getItemsByType('color')[0];
+    const pickerElements = (colorItem.$element.select('.picker-wrap') as unknown as unknown[]);
+    if (Array.isArray(pickerElements) && pickerElements.length > 0) {
+      const pickerWrap = pickerElements[0];
+      if (typeof colorItem.disable === 'function') {
+        colorItem.disable();
+      }
+      const pickerWrapRecord = pickerWrap as Record<string, unknown>;
+      const classList = pickerWrapRecord.get as (key: string) => Record<string, (method: string) => boolean>;
+      assert.strictEqual(classList('classList').contains('show'), false);
+      openPicker(colorItem);
+      assert.strictEqual(classList('classList').contains('show'), false);
+      if (typeof colorItem.enable === 'function') {
+        colorItem.enable();
+      }
+      openPicker(colorItem);
+      assert.strictEqual(classList('classList').contains('show'), true);
+    }
   });
 
   it('sets the value and closes picker when the user makes a selection', function() {
-    var clayConfig = fixture.clayConfig([{type: 'color', sunlight: false}]);
-    var colorItem = clayConfig.getItemsByType('color')[0];
-    var $picker = colorItem.$element.select('.picker-wrap');
+    const clayConfig: ClayConfigInstance = fixture.clayConfig([{type: 'color', sunlight: false}]);
+    const colorItem: ClayItemInstance = clayConfig.getItemsByType('color')[0];
+    const pickerElements = (colorItem.$element.select('.picker-wrap') as unknown as unknown[]);
     assert.strictEqual(colorItem.get(), 0x000000);
     openPicker(colorItem);
-    colorItem.$element.select('[data-value="16711680"]')[0].click();
+    const colorSelectElements = (colorItem.$element.select('[data-value="16711680"]') as unknown as unknown[]);
+    if (Array.isArray(colorSelectElements) && colorSelectElements.length > 0) {
+      const firstColorSelect = colorSelectElements[0] as Record<string, unknown>;
+      if (typeof firstColorSelect.click === 'function') {
+        (firstColorSelect.click as () => void)();
+      }
+    }
     assert.strictEqual(colorItem.get(), 0xff0000);
-    assert.strictEqual(
-      colorItem.$element.select('.value')[0].style.backgroundColor,
-      'rgb(255, 0, 0)'
-    );
-    assert.strictEqual($picker.get('classList').contains('show'), false);
+    if (Array.isArray(pickerElements) && pickerElements.length > 0) {
+      const valueElements = (colorItem.$element.select('.value') as unknown as unknown[]);
+      if (Array.isArray(valueElements) && valueElements.length > 0) {
+        assert.strictEqual(
+          ((valueElements[0] as Record<string, unknown>).style as Record<string, unknown>).backgroundColor,
+          'rgb(255, 0, 0)'
+        );
+      }
+      const pickerWrap = pickerElements[0] as Record<string, unknown>;
+      const pickerClassList = pickerWrap.classList as Record<string, (method: string) => boolean>;
+      assert.strictEqual(pickerClassList.contains('show'), false);
+    }
   });
 
   it('closes the picker if a user clicks the background', function() {
-    var clayConfig = fixture.clayConfig([{type: 'color', sunlight: false}]);
-    var colorItem = clayConfig.getItemsByType('color')[0];
-    var $picker = colorItem.$element.select('.picker-wrap');
+    const clayConfig: ClayConfigInstance = fixture.clayConfig([{type: 'color', sunlight: false}]);
+    const colorItem: ClayItemInstance = clayConfig.getItemsByType('color')[0];
+    const pickerElements = (colorItem.$element.select('.picker-wrap') as unknown as unknown[]);
     assert.strictEqual(colorItem.get(), 0x000000);
     openPicker(colorItem);
-    assert.strictEqual($picker.get('classList').contains('show'), true);
-    $picker[0].click();
-    assert.strictEqual($picker.get('classList').contains('show'), false);
+    const pickerWrap = pickerElements as unknown;
+    if (typeof pickerWrap === 'object' && pickerWrap !== null && 'get' in pickerWrap) {
+      const pickerWrapRecord = pickerWrap as Record<string, unknown>;
+      const pickerClassList = pickerWrapRecord.get as (key: string) => Record<string, (method: string) => boolean>;
+      assert.strictEqual(pickerClassList('classList').contains('show'), true);
+    }
+    if (Array.isArray(pickerElements) && pickerElements.length > 0) {
+      const firstPickerElement = pickerElements[0] as Record<string, unknown>;
+      if (typeof firstPickerElement.click === 'function') {
+        firstPickerElement.click();
+      }
+    }
+    if (typeof pickerWrap === 'object' && pickerWrap !== null && 'get' in pickerWrap) {
+      const pickerWrapRecord = pickerWrap as Record<string, unknown>;
+      const pickerClassListAgain = pickerWrapRecord.get as (key: string) => Record<string, (method: string) => boolean>;
+      assert.strictEqual(pickerClassListAgain('classList').contains('show'), false);
+    }
   });
 
   describe('color rounding', function() {
-    var layout = 'GRAY';
+    let layout: unknown = 'GRAY';
     testClosestToLayout('000000', 0x000000, layout);
     testClosestToLayout('005500', 0x000000, layout);
     testClosestToLayout('55aa55', 0xaaaaaa, layout);

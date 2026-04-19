@@ -1,11 +1,11 @@
 'use strict';
 
-var assert = require('chai').assert;
-var fixture = require('../../fixture');
+import { assert } from 'chai';
+import fixture = require('../../fixture');
 
-describe('component - select', function() {
-  it('sets the value display to the correct value on change', function() {
-    var clayConfig = fixture.clayConfig([
+describe('component - select', function(): void {
+  it('sets the value display to the correct value on change', function(): void {
+    const clayConfig = fixture.clayConfig([
       {
         type: 'select',
         defaultValue: 'value-1',
@@ -15,16 +15,18 @@ describe('component - select', function() {
         ]
       }
     ]);
-    var selectItem = clayConfig.getItemsByType('select')[0];
-    var $valueDisplay = selectItem.$element.select('.value');
-    assert.strictEqual($valueDisplay.get('innerHTML'), 'label 1');
+    const selectItem = clayConfig.getItemsByType('select')[0];
+    const $valueDisplay = selectItem.$element.select('.value');
+    const value1 = $valueDisplay.get('innerHTML');
+    assert.strictEqual(value1, 'label 1');
     selectItem.set('value-2');
-    assert.strictEqual($valueDisplay.get('innerHTML'), 'label 2');
+    const value2 = $valueDisplay.get('innerHTML');
+    assert.strictEqual(value2, 'label 2');
   });
 
   it('sets the value display to the correct value on change when using optgroups',
-  function() {
-    var clayConfig = fixture.clayConfig([
+  function(): void {
+    const clayConfig = fixture.clayConfig([
       {
         type: 'select',
         defaultValue: 'value-1',
@@ -37,10 +39,12 @@ describe('component - select', function() {
         ]
       }
     ]);
-    var selectItem = clayConfig.getItemsByType('select')[0];
-    var $valueDisplay = selectItem.$element.select('.value');
-    assert.strictEqual($valueDisplay.get('innerHTML'), 'label 1');
+    const selectItem = clayConfig.getItemsByType('select')[0];
+    const $valueDisplay = selectItem.$element.select('.value');
+    const value1 = $valueDisplay.get('innerHTML');
+    assert.strictEqual(value1, 'label 1');
     selectItem.set('value-2');
-    assert.strictEqual($valueDisplay.get('innerHTML'), 'label 2');
+    const value2 = $valueDisplay.get('innerHTML');
+    assert.strictEqual(value2, 'label 2');
   });
 });

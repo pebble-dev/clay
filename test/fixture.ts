@@ -1,23 +1,24 @@
 'use strict';
 
-var _ = require('../src/scripts/vendor/minified')._;
-var $ = require('../src/scripts/vendor/minified').$;
-var HTML = require('../src/scripts/vendor/minified').HTML;
-var ClayItem = require('../src/scripts/lib/clay-item');
-var ClayConfig = require('../src/scripts/lib/clay-config');
-var Clay = require('../index');
-var components = require('../src/scripts/components');
-var componentRegistry = require('../src/scripts/lib/component-registry');
-var idCounter = 0;
+import minified = require('../src/scripts/vendor/minified');
+import createClayItem = require('../src/scripts/lib/clay-item');
+import createClayConfig = require('../src/scripts/lib/clay-config');
+import Clay = require('../index');
+import components = require('../src/scripts/components');
+import componentRegistry = require('../src/scripts/lib/component-registry');
+import type { ClayConfigItem, ClayMeta, ClayComponentInput } from '../src/scripts/lib/types';
+
+const _ = minified._;
+const $ = minified.$;
+const HTML = minified.HTML;
+
+let idCounter = 0;
 
 /**
- * @param {Object} [extra] - add/replace keys in the meta
- * @returns {{accountToken: string, watchToken: string, activeWatchInfo: {platform:
- *   string, model: string, language: string, firmware: {major: number, minor:
- *   number, patch: number, suffix: string}}, userData: {}}}
+ * Create a mock meta object, optionally extended with additional properties.
  */
-module.exports.meta = function(extra) {
-  var result = {
+function meta(extra?: Record<string, unknown>): ClayMeta & Record<string, unknown> {
+  const result: ClayMeta & Record<string, unknown> = {
     accountToken: '0123456789abcdef0123456789abcdef',
     watchToken: '0123456789abcdef0123456789abcdef',
     activeWatchInfo: {
@@ -34,111 +35,115 @@ module.exports.meta = function(extra) {
     userData: {}
   };
 
-  _.eachObj(extra || {}, function(key, val) {
+  _.eachObj(extra || {}, function(key: string, val: unknown) {
     result[key] = val;
   });
 
   return result;
-};
+}
 
 /**
- * @param {string|Object} config
- * @param {boolean} [autoRegister=true]
- * @returns {Clay~ConfigItem}
+ * Create a config item, with auto-registration if needed.
  */
-module.exports.configItem = function(config, autoRegister) {
+function configItem(config: string | ClayConfigItem, autoRegister?: boolean): ClayConfigItem {
+  let resolvedConfig: ClayConfigItem;
   if (typeof config === 'string') {
-    config = { type: config };
+    resolvedConfig = { type: config };
+  } else {
+    resolvedConfig = config;
   }
 
-  var result = _.extend({}, {
-    label: config.type + '-label',
+  const defaults: ClayConfigItem = {
+    type: resolvedConfig.type,
+    label: resolvedConfig.type + '-label',
     messageKey: 'messageKey-' + idCounter,
     id: 'id-' + idCounter
-  }, config);
+  };
+  const result: ClayConfigItem = Object.assign(defaults, resolvedConfig);
 
   idCounter++;
 
   if (autoRegister !== false &&
-      !componentRegistry[result.type] &&
-      result.type !== 'section') {
-    ClayConfig.registerComponent(components[result.type]);
+      !(result.type in componentRegistry) &&
+      result.type !== 'section' &&
+      result.type in components) {
+    createClayConfig.registerComponent(components[result.type]);
   }
 
   return result;
-};
+}
 
 /**
- * @param {string|Object} config
- * @param {boolean} [autoRegister=true]
- * @returns {ClayItem}
+ * Create a ClayItem from a config.
  */
-module.exports.clayItem = function(config, autoRegister) {
-  return new ClayItem(module.exports.configItem(config, autoRegister));
-};
+function clayItem(config: string | ClayConfigItem, autoRegister?: boolean) {
+  return createClayItem(configItem(config, autoRegister));
+}
 
 /**
- * @param {Array} types
- * @param {boolean} [autoRegister=true]
- * @returns {*}
+ * Create a config array from types, recursively handling nested sections.
  */
-module.exports.config = function(types, autoRegister) {
+function config(types: (string | ClayConfigItem | (string | ClayConfigItem)[])[], autoRegister?: boolean): ClayConfigItem[] {
   return types.map(function(item) {
-    return Array.isArray(item) ?
-      {type: 'section', items: module.exports.config(item, autoRegister)} :
-      module.exports.configItem(item, autoRegister);
+    if (Array.isArray(item)) {
+      return {
+        type: 'section',
+        items: config(item, autoRegister)
+      };
+    }
+    return configItem(item, autoRegister);
   });
-};
+}
 
 /**
- * @param {Array} types
- * @param {boolean} [build=true] - run the build method on the result
- * @param {boolean} [autoRegister=true]
- * @param {Object} [settings] - settings to pass to constructor
- * @param {Object} [meta] - override the meta
- * @returns {ClayConfig}
+ * Create a ClayConfig instance from types.
  */
-module.exports.clayConfig = function(types, build, autoRegister, settings, meta) {
-  var clayConfig = new ClayConfig(
+function clayConfig(
+  types?: (string | ClayConfigItem | (string | ClayConfigItem)[])[],
+  build?: boolean,
+  autoRegister?: boolean,
+  settings?: Record<string, unknown>,
+  metaOverride?: Record<string, unknown>
+) {
+  const clayConfigInstance = createClayConfig(
     settings || {},
-    module.exports.config(types, autoRegister),
-    $(HTML('<div>')),
-    module.exports.meta(meta)
+    config(types || [], autoRegister),
+    HTML('<div>'),
+    meta(metaOverride)
   );
-  return build === false ? clayConfig : clayConfig.build();
-};
+  return build === false ? clayConfigInstance : clayConfigInstance.build();
+}
 
 /**
- * @param {Array} config - the Clay config
- * @param {function} [customFn] - Custom code to run from the config page. Will run
- *   with the ClayConfig instance as context
- * @param {Object} [options] - Additional options to pass to Clay
- * @param {boolean} [options.autoHandleEvents] - If false, Clay will not
- *   automatically handle the 'showConfiguration' and 'webviewclosed' events
- * @param {*} [options.userData={}] - Arbitrary data to pass to the config page. Will
- *   be available as `clayConfig.meta.userData`
- * @param {boolean} [destroyLocalStorage=true]
- * @return {Clay}
+ * Create a Clay instance with optional custom code and options.
  */
-module.exports.clay = function(config, customFn, options, destroyLocalStorage) {
+function clay(
+  clayConfig: ClayConfigItem[],
+  customFn?: ((this: unknown) => void) | null,
+  options?: Record<string, unknown>,
+  destroyLocalStorage?: boolean
+) {
   if (destroyLocalStorage !== false) {
     localStorage.removeItem('clay-settings');
   }
-  return new Clay(config, customFn, options);
-};
+  return Clay(clayConfig, customFn, options);
+}
 
 /**
- * @param {Array} keys
- * @return {Object}
+ * Convert an array of message key identifiers to a map of key names to IDs.
+ * Handles array notation like 'myKey[3]' to reserve space for arrays.
  */
-module.exports.messageKeys = function(keys) {
-  var counter = 10000;
-  var result = {};
+function messageKeys(keys: string[]): Record<string, number> {
+  let counter = 10000;
+  const result: Record<string, number> = {};
 
   keys.forEach(function(key) {
-    var matches = key.match(/(.+?)(?:\[(\d*)\])?$/);
-    var parsedKey = matches[1];
-    var length = parseInt(matches[2] || 1, 10);
+    const matches = key.match(/(.+?)(?:\[(\d*)\])?$/);
+    if (!matches) {
+      return;
+    }
+    const parsedKey = matches[1];
+    const length = parseInt(matches[2] || '1', 10);
 
     result[parsedKey] = counter;
 
@@ -146,37 +151,51 @@ module.exports.messageKeys = function(keys) {
   });
 
   return result;
-};
+}
 
 /**
- * @param {Object} obj
- * @returns {Array}
+ * Convert an object with arrays to message key notation.
  */
-module.exports.messageKeysObjToArray = function(obj) {
+function messageKeysObjToArray(obj: Record<string, unknown>): string[] {
   return Object.keys(obj).map(function(key) {
-    return Array.isArray(obj[key]) ?
-    key + '[' + obj[key].length + ']' :
+    const val = obj[key];
+    return Array.isArray(val) ?
+      key + '[' + val.length + ']' :
       key;
   });
-};
+}
 
 /**
- * @param {Object} expected
- * @return {Object}
+ * Convert expected values object to message key map.
  */
-module.exports.messageKeysExpected = function(expected) {
-  var result = {};
-  var messageKeys = module.exports.messageKeysObjToArray(expected);
-  messageKeys = module.exports.messageKeys(messageKeys);
+function messageKeysExpected(expected: Record<string, unknown>): Record<string, unknown> {
+  const result: Record<string, unknown> = {};
+  let messageKeysArray = messageKeysObjToArray(expected);
+  const messageKeysMap = messageKeys(messageKeysArray);
 
   Object.keys(expected).forEach(function(key) {
-    var expectedVal = Array.isArray(expected[key]) ? expected[key] : [expected[key]];
+    const expectedVal = Array.isArray(expected[key]) ? expected[key] : [expected[key]];
+    if (!Array.isArray(expectedVal)) {
+      return;
+    }
     expectedVal.forEach(function(val, index) {
       if (typeof val !== 'undefined') {
-        result[messageKeys[key] + index] = val;
+        result[messageKeysMap[key] + index] = val;
       }
     });
   });
 
   return result;
+}
+
+export = {
+  meta,
+  configItem,
+  clayItem,
+  config,
+  clayConfig,
+  clay,
+  messageKeys,
+  messageKeysObjToArray,
+  messageKeysExpected
 };

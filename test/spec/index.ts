@@ -1,19 +1,45 @@
 'use strict';
 
-var fixture = require('../fixture');
-var Clay = require('../../index');
-var assert = require('chai').assert;
-var standardComponents = require('../../src/scripts/components');
-var sinon = require('sinon');
-var toSource = require('tosource');
+import fixture = require('../fixture');
+import Clay = require('../../index');
+import { assert } from 'chai';
+import standardComponents = require('../../src/scripts/components');
+import sinon = require('sinon');
+
+declare function toSource(obj: unknown): string;
+
+declare const global: Record<string, unknown>;
+
+interface SinonStubbed {
+  callCount: number;
+  called: boolean;
+  calledWith(...args: unknown[]): boolean;
+  calledWithMatch(...args: unknown[]): boolean;
+  withArgs(...args: unknown[]): sinon.SinonStub;
+  callArg(index: number): unknown;
+  callArgWith(index: number, ...args: unknown[]): unknown;
+  getCall(index: number): sinon.SinonSpyCall | null;
+  restore(): void;
+  returns(value: unknown): sinon.SinonStub;
+}
+
+interface MockPebble {
+  addEventListener: SinonStubbed;
+  openURL: SinonStubbed;
+  sendAppMessage: SinonStubbed;
+  getActiveWatchInfo: SinonStubbed;
+  getAccountToken: SinonStubbed;
+  getWatchToken: SinonStubbed;
+  platform?: string;
+}
 
 /**
  * @return {void}
  */
-function stubPebble() {
-  var meta = fixture.meta();
+function stubPebble(): void {
+  const meta = fixture.meta();
 
-  global.Pebble = {
+  const mockPebble: MockPebble = {
     addEventListener: sinon.stub(),
     openURL: sinon.stub(),
     sendAppMessage: sinon.stub(),
@@ -21,31 +47,42 @@ function stubPebble() {
     getAccountToken: sinon.stub().returns(meta.accountToken),
     getWatchToken: sinon.stub().returns(meta.watchToken)
   };
+
+  global.Pebble = mockPebble;
 }
 
 /**
  * @param {Array} keys
  * @return {Object}
  */
-function stubMessageKeys(keys) {
-  var messageKeys = require('message_keys');
-  Object.keys(messageKeys).forEach(function(key) {
-    delete messageKeys[key];
+function stubMessageKeys(keys: unknown[]): Record<string, unknown> {
+  const messageKeys: unknown = require('message_keys');
+  const keyList: string[] = [];
+  keys.forEach(function(key: unknown) {
+    if (typeof key === 'string') {
+      keyList.push(key);
+    }
   });
 
-  var newKeys = fixture.messageKeys(keys);
-  Object.keys(newKeys).forEach(function(key) {
-    messageKeys[key] = newKeys[key];
-  });
+  if (typeof messageKeys === 'object' && messageKeys !== null) {
+    Object.keys(messageKeys as Record<string, unknown>).forEach(function(key: string) {
+      delete (messageKeys as Record<string, unknown>)[key];
+    });
 
-  return messageKeys;
+    const newKeys = fixture.messageKeys(keyList);
+    Object.keys(newKeys).forEach(function(key: string) {
+      (messageKeys as Record<string, unknown>)[key] = (newKeys as Record<string, unknown>)[key];
+    });
+  }
+
+  return messageKeys as Record<string, unknown>;
 }
 
 describe('Clay', function() {
   describe('Clay constructor', function() {
     it('throws if the config is not an array', function() {
       assert.throws(function() {
-        fixture.clay({});
+        fixture.clay({} as any);
       }, /must be an Array/i);
     });
 
@@ -60,7 +97,7 @@ describe('Clay', function() {
 
     it('throws if customFn is not a function', function() {
       assert.throws(function() {
-        fixture.clay([], {});
+        fixture.clay([], {} as any);
       }, /must be a function/i);
     });
 
@@ -75,11 +112,11 @@ describe('Clay', function() {
     });
 
     it('registers the standard components present in the config', function() {
-      var config = fixture.config(
+      const config = fixture.config(
         ['input', 'input', 'select', 'custom', ['color']],
         false
       );
-      var clay = fixture.clay(config);
+      const clay = fixture.clay(config);
       assert.deepEqual(clay.components, {
         input: standardComponents['input'],
         select: standardComponents['select'],
@@ -90,15 +127,16 @@ describe('Clay', function() {
     it('handles the "showConfiguration" event if autoHandleEvents is not false',
     function() {
       stubPebble();
-      var clay = fixture.clay([]);
+      const clay = fixture.clay([]);
 
       // we stub the generateUrl method to avoid very large string comparisons.
-      var generateUrlStub = sinon.stub(clay, 'generateUrl');
+      const generateUrlStub = sinon.stub(clay, 'generateUrl');
       generateUrlStub.returns('data:text/html;base64,PGh0bWw%2BVEVTVDwvaHRtbD4%3D');
-      Pebble.addEventListener.withArgs('showConfiguration').callArg(1);
+      const pebble = global.Pebble as MockPebble;
+      pebble.addEventListener.withArgs('showConfiguration').callArg(1);
 
-      assert(Pebble.addEventListener.calledWith('showConfiguration'));
-      assert(Pebble.openURL.calledWith(clay.generateUrl()));
+      assert(pebble.addEventListener.calledWith('showConfiguration'));
+      assert(pebble.openURL.calledWith(clay.generateUrl()));
       generateUrlStub.restore();
     });
 
@@ -106,22 +144,23 @@ describe('Clay', function() {
     function() {
       stubPebble();
       fixture.clay([]);
-      var logStub = sinon.stub(console, 'log');
-      var expected = {someSetting: 'value'};
+      const logStub = sinon.stub(console, 'log');
+      const expected = {someSetting: 'value'};
 
       stubMessageKeys(fixture.messageKeysObjToArray(expected));
-      Pebble.addEventListener
+      const pebble = global.Pebble as MockPebble;
+      pebble.addEventListener
         .withArgs('webviewclosed')
         .callArgWith(1, {response: encodeURIComponent(JSON.stringify(expected))});
 
-      var expectedAppMessage = fixture.messageKeysExpected(expected);
-      assert(Pebble.addEventListener.calledWith('webviewclosed'));
-      assert(Pebble.sendAppMessage.calledWith(expectedAppMessage));
+      const expectedAppMessage = fixture.messageKeysExpected(expected);
+      assert(pebble.addEventListener.calledWith('webviewclosed'));
+      assert(pebble.sendAppMessage.calledWith(expectedAppMessage));
 
-      Pebble.sendAppMessage.callArg(1);
+      pebble.sendAppMessage.callArg(1);
       assert(logStub.calledWith('Sent config data to Pebble'));
 
-      Pebble.sendAppMessage.callArgWith(2, {some: 'error'});
+      pebble.sendAppMessage.callArgWith(2, {some: 'error'});
       assert(logStub.calledWith('Failed to send config data!'));
       assert(logStub.calledWith('{"some":"error"}'));
 
@@ -131,22 +170,24 @@ describe('Clay', function() {
     it('handles an empty response in the "webviewclosed" handler', function() {
       stubPebble();
       fixture.clay([]);
-      Pebble.addEventListener.withArgs('webviewclosed').callArgWith(1, undefined);
+      const pebble = global.Pebble as MockPebble;
+      pebble.addEventListener.withArgs('webviewclosed').callArgWith(1, undefined);
 
-      assert(Pebble.addEventListener.calledWith('webviewclosed'));
-      assert.strictEqual(Pebble.sendAppMessage.callCount, 0);
+      assert(pebble.addEventListener.calledWith('webviewclosed'));
+      assert.strictEqual(pebble.sendAppMessage.callCount, 0);
     });
 
     it('does not handle the "webviewclosed" or "showConfiguration" events ' +
        'if autoHandleEvents is false', function() {
       stubPebble();
-      fixture.clay([], null, { autoHandleEvents: false });
+      fixture.clay([], undefined, { autoHandleEvents: false });
+      const pebble = global.Pebble as MockPebble;
       assert.strictEqual(
-        Pebble.addEventListener.withArgs('webviewclosed').called,
+        pebble.addEventListener.withArgs('webviewclosed').called,
         false
       );
       assert.strictEqual(
-        Pebble.addEventListener.withArgs('showConfiguration').called,
+        pebble.addEventListener.withArgs('showConfiguration').called,
         false
       );
     });
@@ -154,16 +195,19 @@ describe('Clay', function() {
 
   describe('.version', function() {
     it('has the correct version', function() {
-      var config = fixture.config(['input', 'text', 'color']);
-      var clay = fixture.clay(config);
-      assert.strictEqual(clay.version, require('../../package.json').version);
+      const config = fixture.config(['input', 'text', 'color']);
+      const clay = fixture.clay(config);
+      const pkg: unknown = require('../../package.json');
+      if (typeof pkg === 'object' && pkg !== null && 'version' in pkg && typeof pkg.version === 'string') {
+        assert.strictEqual(clay.version, pkg.version);
+      }
     });
   });
 
   describe('.config', function() {
     it('is a copy not a reference', function() {
-      var config = fixture.config(['input', 'text', 'color']);
-      var clay = fixture.clay(config);
+      const config = fixture.config(['input', 'text', 'color']);
+      const clay = fixture.clay(config);
       assert.notStrictEqual(clay.config, config);
       assert.deepEqual(clay.config, config);
     });
@@ -171,14 +215,14 @@ describe('Clay', function() {
 
   describe('.registerComponent()', function() {
     it('adds the component to the this.components', function() {
-      var clay = fixture.clay([]);
-      var customComponent = {
+      const clay = fixture.clay([]);
+      const customComponent = {
         name: 'custom',
         template: '<div></div>',
         manipulator: 'val'
       };
       clay.registerComponent(customComponent);
-      assert.strictEqual(clay.components[customComponent.name], customComponent);
+      assert.strictEqual((clay.components as Record<string, unknown>)[customComponent.name], customComponent);
     });
   });
 
@@ -189,21 +233,27 @@ describe('Clay', function() {
      * @param {string} url
      * @returns {string}
      */
-    function decodeUrl(url) {
+    function decodeUrl(url: string): string {
       return decodeURIComponent(url.replace(/^.*?[#,]/, ''));
     }
 
     describe('string substitutions', function() {
-      var customFn = function() { this.getAllItems(); };
-      var config = fixture.config(['input', 'color']);
-      var settings = { messageKey: 'value' };
-      var clay;
-      var html;
+      const customFn = function(this: unknown) {
+        const self = this as Record<string, unknown>;
+        if (typeof self.getAllItems === 'function') {
+          self.getAllItems();
+        }
+      };
+      const config = fixture.config(['input', 'color']);
+      const settings = { messageKey: 'value' };
+      let clay: ReturnType<typeof fixture.clay>;
+      let html: string;
 
       before(function() {
         stubPebble();
         clay = fixture.clay(config, customFn);
-        Pebble.addEventListener.withArgs('showConfiguration').callArg(1);
+        const pebble = global.Pebble as MockPebble;
+        pebble.addEventListener.withArgs('showConfiguration').callArg(1);
         localStorage.setItem('clay-settings', JSON.stringify(settings));
         html = decodeUrl(clay.generateUrl());
       });
@@ -240,16 +290,18 @@ describe('Clay', function() {
     });
 
     it('does not replace $$RETURN_TO$$ if in the emulator', function() {
-      var clay = fixture.clay([]);
+      const clay = fixture.clay([]);
       stubPebble();
-      Pebble.platform = 'pypkjs';
+      const pebble = global.Pebble as MockPebble;
+      pebble.platform = 'pypkjs';
       assert.match(decodeUrl(clay.generateUrl()), /\$\$RETURN_TO\$\$/);
     });
 
     it('returns the emulator URL if inside emulator', function() {
-      var clay = fixture.clay([]);
+      const clay = fixture.clay([]);
       stubPebble();
-      Pebble.platform = 'pypkjs';
+      const pebble = global.Pebble as MockPebble;
+      pebble.platform = 'pypkjs';
       assert.match(
         clay.generateUrl(),
         /^http:\/\/clay\.pebble\.com\.s3-website-us-west-2\.amazonaws.com\/#/
@@ -258,8 +310,8 @@ describe('Clay', function() {
 
     it('doesn\'t throw and logs an error if settings in localStorage are broken',
     function() {
-      var clay = fixture.clay([]);
-      var errorStub = sinon.stub(console, 'error');
+      const clay = fixture.clay([]);
+      const errorStub = sinon.stub(console, 'error');
       localStorage.setItem('clay-settings', 'not valid JSON');
       assert.doesNotThrow(function() {
         clay.generateUrl();
@@ -272,19 +324,19 @@ describe('Clay', function() {
   describe('.getSettings', function() {
     it('it writes to localStorage and returns the data when input is encoded',
     function() {
-      var clay = fixture.clay([]);
-      var settings = encodeURIComponent(JSON.stringify({
+      const clay = fixture.clay([]);
+      const settings = encodeURIComponent(JSON.stringify({
         key1: 'value1',
         key2: {value: 'value2'}
       }));
-      var expected = {
+      const expected = {
         key1: 'value1',
         key2: 'value2'
       };
 
       stubMessageKeys(fixture.messageKeysObjToArray(expected));
 
-      var result = clay.getSettings(settings);
+      const result = clay.getSettings(settings);
       assert.equal(
         localStorage.getItem('clay-settings'),
         JSON.stringify(expected)
@@ -294,19 +346,19 @@ describe('Clay', function() {
 
     it('it writes to localStorage and returns the data when input is not encoded',
     function() {
-      var clay = fixture.clay([]);
-      var settings = JSON.stringify({
+      const clay = fixture.clay([]);
+      const settings = JSON.stringify({
         key1: 'value1',
         key2: {value: 'value2%7Dbreaks'}
       });
-      var expected = {
+      const expected = {
         key1: 'value1',
         key2: 'value2%7Dbreaks'
       };
 
       stubMessageKeys(fixture.messageKeysObjToArray(expected));
 
-      var result = clay.getSettings(settings);
+      const result = clay.getSettings(settings);
       assert.equal(
         localStorage.getItem('clay-settings'),
         JSON.stringify(expected)
@@ -316,7 +368,7 @@ describe('Clay', function() {
 
     it('does not store the response if it is invalid JSON and logs an error',
     function() {
-      var clay = fixture.clay([]);
+      const clay = fixture.clay([]);
       localStorage.setItem('clay-settings', '{"messageKey":"value"}');
 
       assert.throws(function() {
@@ -326,8 +378,8 @@ describe('Clay', function() {
     });
 
     it('Prepares the settings for sendAppMessage', function() {
-      var clay = fixture.clay([]);
-      var response = encodeURIComponent(JSON.stringify({
+      const clay = fixture.clay([]);
+      const response = encodeURIComponent(JSON.stringify({
         test1: false,
         test2: 'val-2',
         test3: true,
@@ -344,7 +396,7 @@ describe('Clay', function() {
           value: [1, 2, 3, 4]
         }
       }));
-      var expected = {
+      const expected = {
         test1: 0,
         test2: 'val-2',
         test3: 1,
@@ -366,8 +418,8 @@ describe('Clay', function() {
 
     it('does not prepare the settings for sendAppMessage if convert is false',
     function() {
-      var clay = fixture.clay([]);
-      var settings = {
+      const clay = fixture.clay([]);
+      const settings = {
         test1: false,
         test2: 'val-2',
         test3: true,
@@ -380,7 +432,7 @@ describe('Clay', function() {
           value: 12.34
         }
       };
-      var response = encodeURIComponent(JSON.stringify(settings));
+      const response = encodeURIComponent(JSON.stringify(settings));
 
       assert.deepEqual(clay.getSettings(response, false), settings);
     });
@@ -389,12 +441,12 @@ describe('Clay', function() {
   describe('.setSettings', function() {
     it('it writes to localStorage when passing an object',
       function() {
-        var clay = fixture.clay([]);
-        var settings = {
+        const clay = fixture.clay([]);
+        const settings = {
           key1: 'value1',
           key2: 'value2'
         };
-        var expected = {
+        const expected = {
           key1: 'value1',
           key2: 'value2'
         };
@@ -408,8 +460,8 @@ describe('Clay', function() {
 
     it('it writes to localStorage when passing a key and a value',
       function() {
-        var clay = fixture.clay([]);
-        var expected = {
+        const clay = fixture.clay([]);
+        const expected = {
           key1: 'value1',
           key2: 'value2%7Dbreaks'
         };
@@ -423,8 +475,8 @@ describe('Clay', function() {
 
     it('doesn\'t throw and logs an error if settings in localStorage are broken',
       function() {
-        var clay = fixture.clay([]);
-        var errorStub = sinon.stub(console, 'error');
+        const clay = fixture.clay([]);
+        const errorStub = sinon.stub(console, 'error');
         localStorage.setItem('clay-settings', 'not valid JSON');
         assert.doesNotThrow(function() {
           clay.setSettings('key', 'value');
@@ -435,7 +487,7 @@ describe('Clay', function() {
   });
 
   describe('.meta', function() {
-    var emptyMeta = {
+    const emptyMeta = {
       activeWatchInfo: null,
       accountToken: '',
       watchToken: '',
@@ -444,34 +496,36 @@ describe('Clay', function() {
 
     it('populates the meta in the showConfiguration handler', function() {
       stubPebble();
-      var userData = {foo: 'bar'};
-      var clay = fixture.clay([], null, {userData: userData});
+      const userData = {foo: 'bar'};
+      const clay = fixture.clay([], undefined, {userData: userData});
 
       // meta only gets populated after showConfiguration happens
       assert.deepEqual(clay.meta, emptyMeta);
-      Pebble.addEventListener.withArgs('showConfiguration').callArg(1);
+      const pebble = global.Pebble as MockPebble;
+      pebble.addEventListener.withArgs('showConfiguration').callArg(1);
       assert.deepEqual(clay.meta, fixture.meta({userData: userData}));
     });
 
     it('populates the meta in the ready handler', function() {
       stubPebble();
-      var userData = {foo: 'bar'};
-      var clay = fixture.clay([], null, {
+      const userData = {foo: 'bar'};
+      const clay = fixture.clay([], undefined, {
         autoHandleEvents: false,
         userData: userData
       });
 
       // meta only gets populated after ready happens
       assert.deepEqual(clay.meta, emptyMeta);
-      Pebble.addEventListener.withArgs('ready').callArg(1);
+      const pebble = global.Pebble as MockPebble;
+      pebble.addEventListener.withArgs('ready').callArg(1);
 
       assert.deepEqual(clay.meta, fixture.meta({userData: userData}));
     });
 
     it('populates the meta with with empty values when there is no Pebble global',
     function() {
-      delete global.Pebble;
-      var clay = fixture.clay([], null, {autoHandleEvents: false});
+      delete (global as Record<string, unknown>).Pebble;
+      const clay = fixture.clay([], undefined, {autoHandleEvents: false});
 
       assert.deepEqual(clay.meta, emptyMeta);
     });
@@ -573,7 +627,7 @@ describe('Clay', function() {
     });
 
     it('Handles sparse arrays', function() {
-      var sparseArr = [];
+      const sparseArr: Record<number, string> = {};
       sparseArr[1] = 'two';
       sparseArr[2] = 'three';
       assert.deepEqual(Clay.prepareForAppMessage(sparseArr), sparseArr);
@@ -582,7 +636,7 @@ describe('Clay', function() {
 
   describe('.prepareSettingsForAppMessage', function() {
     it('converts the settings correctly', function() {
-      var settings = {
+      const settings = {
         test1: false,
         'test2[0]': 'val-1',
         'test2[1]': 'val-2',
@@ -598,7 +652,7 @@ describe('Clay', function() {
         'test9[1]': 'foo'
       };
 
-      var expected = {
+      const expected = {
         test1: 0,
         test2: ['val-1', 'val-2'],
         test3: 1,
@@ -612,13 +666,13 @@ describe('Clay', function() {
 
       stubMessageKeys(fixture.messageKeysObjToArray(expected));
 
-      var result = Clay.prepareSettingsForAppMessage(settings);
+      const result = Clay.prepareSettingsForAppMessage(settings);
 
       assert.deepEqual(result, fixture.messageKeysExpected(expected));
     });
 
     it('throws if a 2 dimension array is present', function() {
-      var settings = {
+      const settings = {
         'test1[1]': ['bad', 'developer!']
       };
 

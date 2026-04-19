@@ -1,8 +1,9 @@
 'use strict';
 
-var assert = require('chai').assert;
-var sinon = require('sinon');
-var fixture = require('../../fixture');
+import { assert } from 'chai';
+import sinon = require('sinon');
+import fixture = require('../../fixture');
+import type { ClayConfigItem } from '../../../src/scripts/lib/types';
 
 describe('manipulators', function() {
 
@@ -12,19 +13,19 @@ describe('manipulators', function() {
    * @param {*} [expected]
    * @return {void}
    */
-  function testSetGet(itemType, value, expected) {
-    expected = typeof expected === 'undefined' ? value : expected;
+  function testSetGet(itemType: string | ClayConfigItem, value: unknown, expected?: unknown): void {
+    const expectedVal = typeof expected === 'undefined' ? value : expected;
 
     describe('.set() and .get()', function() {
-      it('sets: "' + value + '" and gets: "' + expected + '" then triggers "change"',
+      it('sets: "' + value + '" and gets: "' + expectedVal + '" then triggers "change"',
       function() {
-        var handlerSpy = sinon.spy();
-        var clayItem = fixture.clayConfig([itemType]).getAllItems()[0];
+        const handlerSpy = sinon.spy();
+        const clayItem = fixture.clayConfig([itemType]).getAllItems()[0];
         clayItem.on('change', handlerSpy);
 
         clayItem.set(value);
         clayItem.set(value);
-        assert.deepEqual(clayItem.get(), expected);
+        assert.deepEqual(clayItem.get(), expectedVal);
         assert.strictEqual(handlerSpy.callCount, 1, 'handler not called once');
         assert(handlerSpy.calledOn(clayItem), 'handler not called on clayItem');
       });
@@ -35,18 +36,18 @@ describe('manipulators', function() {
    * @param {string|Object} itemType
    * @return {void}
    */
-  function testDisable(itemType) {
+  function testDisable(itemType: string | ClayConfigItem): void {
     describe('.disable()', function() {
       it('disables the field then triggers a "disabled" event', function() {
-        var handlerSpy = sinon.spy();
-        var clayItem = fixture.clayItem(itemType);
+        const handlerSpy = sinon.spy();
+        const clayItem = fixture.clayItem(itemType);
         clayItem.on('disabled', handlerSpy);
         assert.strictEqual(
           clayItem.$element[0].classList.contains('disabled'),
           false
         );
-        clayItem.disable();
-        clayItem.disable();
+        clayItem.disable?.();
+        clayItem.disable?.();
         assert.strictEqual(
           clayItem.$element[0].classList.contains('disabled'),
           true
@@ -62,20 +63,20 @@ describe('manipulators', function() {
    * @param {string|Object} itemType
    * @return {void}
    */
-  function testEnable(itemType) {
+  function testEnable(itemType: string | ClayConfigItem): void {
     describe('.enable()', function() {
       it('enables the field then triggers an "enabled" event', function() {
-        var handlerSpy = sinon.spy();
-        var clayItem = fixture.clayItem(itemType);
+        const handlerSpy = sinon.spy();
+        const clayItem = fixture.clayItem(itemType);
         clayItem.on('enabled', handlerSpy);
 
-        clayItem.disable();
+        clayItem.disable?.();
         assert.strictEqual(
           clayItem.$element[0].classList.contains('disabled'),
           true
         );
-        clayItem.enable();
-        clayItem.enable();
+        clayItem.enable?.();
+        clayItem.enable?.();
         assert.strictEqual(
           clayItem.$element[0].classList.contains('disabled'),
           false
@@ -91,19 +92,19 @@ describe('manipulators', function() {
    * @param {string|Object} itemType
    * @return {void}
    */
-  function testHide(itemType) {
+  function testHide(itemType: string | ClayConfigItem): void {
     describe('.hide()', function() {
       it('hides the field then triggers a "hide" event', function() {
-        var handlerSpy = sinon.spy();
-        var clayItem = fixture.clayItem(itemType);
+        const handlerSpy = sinon.spy();
+        const clayItem = fixture.clayItem(itemType);
         clayItem.on('hide', handlerSpy);
 
         assert.strictEqual(
           clayItem.$element[0].classList.contains('hide'),
           false
         );
-        clayItem.hide();
-        clayItem.hide();
+        clayItem.hide?.();
+        clayItem.hide?.();
         assert.strictEqual(
           clayItem.$element[0].classList.contains('hide'),
           true
@@ -118,20 +119,20 @@ describe('manipulators', function() {
    * @param {string|Object} itemType
    * @return {void}
    */
-  function testShow(itemType) {
+  function testShow(itemType: string | ClayConfigItem): void {
     describe('.show()', function() {
       it('shows the field then triggers a "show" event', function() {
-        var handlerSpy = sinon.spy();
-        var clayItem = fixture.clayItem(itemType);
+        const handlerSpy = sinon.spy();
+        const clayItem = fixture.clayItem(itemType);
         clayItem.on('show', handlerSpy);
 
-        clayItem.hide();
+        clayItem.hide?.();
         assert.strictEqual(
           clayItem.$element[0].classList.contains('hide'),
           true
         );
-        clayItem.show();
-        clayItem.show();
+        clayItem.show?.();
+        clayItem.show?.();
         assert.strictEqual(
           clayItem.$element[0].classList.contains('hide'),
           false
@@ -143,7 +144,7 @@ describe('manipulators', function() {
   }
 
   describe('html', function() {
-    var type = 'text';
+    const type = 'text';
     testSetGet(type, 'test123');
     testSetGet(type, '<span>some HTML</span>');
     testShow(type);
@@ -151,7 +152,7 @@ describe('manipulators', function() {
   });
 
   describe('button', function() {
-    var type = 'button';
+    const type = 'button';
     testSetGet(type, 'test123');
     testSetGet(type, '<span>some HTML</span>');
     testDisable(type);
@@ -161,7 +162,7 @@ describe('manipulators', function() {
   });
 
   describe('val', function() {
-    var type = 'input';
+    const type = 'input';
     testSetGet(type, 'test321');
     testSetGet(type, 1234, '1234');
     testDisable(type);
@@ -171,7 +172,7 @@ describe('manipulators', function() {
   });
 
   describe('slider', function() {
-    var type = {
+    const type: ClayConfigItem = {
       type: 'slider',
       min: 0,
       max: 100,
@@ -191,7 +192,7 @@ describe('manipulators', function() {
   });
 
   describe('checked', function() {
-    var type = 'toggle';
+    const type = 'toggle';
     testSetGet({type: type, defaultValue: false}, 1, true);
     testSetGet({type: type, defaultValue: false}, true);
     testSetGet({type: type, defaultValue: true}, 0, false);
@@ -203,7 +204,7 @@ describe('manipulators', function() {
   });
 
   describe('radiogroup', function() {
-    var type = {
+    const type: ClayConfigItem = {
       type: 'radiogroup',
       clayId: 1,
       options: [
@@ -222,12 +223,12 @@ describe('manipulators', function() {
   });
 
   describe('checkboxgroup', function() {
-    var type = {
+    const type = {
       type: 'checkboxgroup',
       clayId: 1,
       defaultValue: [true, true, true],
       options: ['First', 'Second', 'Third']
-    };
+    } as unknown as ClayConfigItem;
     testSetGet(type, [false, false, true]);
     testSetGet(type, [true, false], [true, false, false]);
     testSetGet(type, [1, 0], [true, false, false]);
@@ -246,7 +247,7 @@ describe('manipulators', function() {
   });
 
   describe('color', function() {
-    var type = 'color';
+    const type = 'color';
     testSetGet(type, 'FF0000', 0xff0000);
     testSetGet(type, '#FF0000', 0xff0000);
     testSetGet(type, '0xFF0000', 0xff0000);
