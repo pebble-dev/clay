@@ -1,0 +1,33 @@
+{
+  "compilerOptions": {
+    "target": "ES2015",
+    "module": "node16",
+    "allowJs": true,
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "rootDir": ".",
+    "outDir": "./dist-types",
+    "strict": false,
+    "skipLibCheck": true,
+    "moduleResolution": "node16",
+    "typeRoots": ["./types", "./node_modules/@types"]
+  },
+  "include": [
+    "src/scripts/lib/clay-config.js",
+    "src/scripts/lib/clay-events.js",
+    "src/scripts/lib/clay-item.js",
+    "src/scripts/lib/component-registry.js",
+    "src/scripts/lib/manipulators.js",
+    "src/scripts/lib/utils.js"
+  ],
+  "exclude": [
+    "node_modules",
+    "test",
+    "dev",
+    "tmp",
+    "src/scripts/config-page.js",
+    "src/scripts/components",
+    "src/scripts/vendor",
+    "src/js"
+  ]
+}
