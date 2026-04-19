@@ -27,7 +27,6 @@
     "src/scripts/vendor",
     "tmp",
     "dist",
-    "dist-types",
-    "test/type-checks.ts"
+    "dist-types"
   ]
 }
