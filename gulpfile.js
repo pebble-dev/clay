@@ -41,7 +41,7 @@ gulp.task('clean-js', function() {
 */
 function taskJs() {
   return browserify('src/scripts/config-page.ts', { debug: true })
-    .plugin(tsify, { project: './tsconfig.config-page.json' })
+    .plugin(tsify, { noEmit: false, forceConsistentCasingInFileNames: false })
     .transform('deamdify')
     .bundle()
     .pipe(source('config-page.js'))
