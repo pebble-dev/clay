@@ -1,6 +1,6 @@
 'use strict';
 
-module.exports = {
+export = {
   name: 'heading',
   template: require('../../templates/components/heading.tpl'),
   manipulator: 'html',

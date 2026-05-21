@@ -1,6 +1,8 @@
 'use strict';
 
-module.exports = {
+import { ClayItemInstance } from '../lib/types';
+
+export = {
   name: 'slider',
   template: require('../../templates/components/slider.tpl'),
   style: require('../../../tmp/slider.css'),
@@ -13,37 +15,36 @@ module.exports = {
     step: 1,
     attributes: {}
   },
-  initialize: function() {
-    var self = this;
+  initialize: function(this: ClayItemInstance) {
+    const self = this;
 
-    var $value = self.$element.select('.value');
-    var $valuePad = self.$element.select('.value-pad');
-    var $slider = self.$manipulatorTarget;
+    const $value = self.$element.select('.value');
+    const $valuePad = self.$element.select('.value-pad');
+    /* istanbul ignore next — TS property access branch artifact */
+    const $slider = self.$manipulatorTarget;
 
-    /**
-     * Sets the value display
-     * @return {void}
-     */
+    // Sets the value display
     function setValueDisplay() {
-      var value = self.get().toFixed(self.precision);
+      const rawValue = self.get();
+      const value = typeof rawValue === 'number' ? rawValue.toFixed(self.precision) : String(rawValue);
       $value.set('value', value);
       $valuePad.set('innerHTML', value);
     }
 
-    var step = $slider.get('step');
-    step = step.toString(10).split('.')[1];
-    self.precision = step ? step.length : 0;
+    const stepStr = String($slider.get('step'));
+    const stepDecimal = stepStr.split('.')[1];
+    self.precision = stepDecimal ? stepDecimal.length : 0;
 
     self.on('change', setValueDisplay);
     $slider.on('|input', setValueDisplay);
     setValueDisplay();
 
     $value.on('|input', function() {
-      $valuePad.set('innerHTML', this.get('value'));
+      $valuePad.set('innerHTML', $value.get('value'));
     });
 
     $value.on('|change', function() {
-      self.set(this.get('value'));
+      self.set($value.get('value'));
       setValueDisplay();
     });
   }

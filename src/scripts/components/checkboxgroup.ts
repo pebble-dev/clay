@@ -1,6 +1,6 @@
 'use strict';
 
-module.exports = {
+export = {
   name: 'checkboxgroup',
   template: require('../../templates/components/checkboxgroup.tpl'),
   style: require('../../../tmp/checkboxgroup.css'),
