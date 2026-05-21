@@ -1,15 +1,17 @@
 'use strict';
 
-var assert = require('chai').assert;
-var Joi = require('joi');
-var _ = require('../../../src/scripts/vendor/minified')._;
-var HTML = require('../../../src/scripts/vendor/minified').HTML;
-var components = require('../../../src/scripts/components');
-var manipulators = require('../../../src/scripts/lib/manipulators');
-var fixture = require('../../fixture');
-var sinon = require('sinon');
+import { assert } from 'chai';
+import Joi = require('joi');
+import minified = require('../../../src/scripts/vendor/minified');
+import components = require('../../../src/scripts/components');
+import manipulators = require('../../../src/scripts/lib/manipulators');
+import fixture = require('../../fixture');
+import sinon = require('sinon');
 
-var componentSchema = Joi.object().keys({
+const _ = minified._;
+const HTML = minified.HTML;
+
+const componentSchema = Joi.object().keys({
   name: Joi.string().required(),
   template: Joi.string().required(),
   style: Joi.string().optional(),
@@ -24,31 +26,40 @@ var componentSchema = Joi.object().keys({
   initialize: Joi.func().optional()
 }).unknown(true);
 
-describe('components', function() {
-  _.eachObj(components, function(name, component) {
-    describe(name, function() {
-      it('has the correct structure', function() {
+describe('components', function(): void {
+  _.eachObj(components, function(name: string, component: unknown): void {
+    describe(name, function(): void {
+      it('has the correct structure', function(): void {
         Joi.assert(component, componentSchema);
       });
 
-      it('has all the necessary defaults', function() {
-        assert.doesNotThrow(function() {
-          HTML(component.template.trim(), component.defaults);
+      it('has all the necessary defaults', function(): void {
+        assert.doesNotThrow(function(): void {
+          if (typeof component !== 'object' || component === null) return;
+          // as Record<string, unknown> is unavoidable after narrowing to object
+          const comp = component as Record<string, unknown>;
+          const template = comp.template;
+          if (typeof template !== 'string') return;
+          const defaults = comp.defaults as Record<string, unknown> | undefined;
+          HTML(template.trim(), defaults);
         });
       });
 
-      it('is able to be passed to ClayConfig', function() {
-        fixture.clayConfig([component.name]);
+      it('is able to be passed to ClayConfig', function(): void {
+        if (typeof name !== 'string') return;
+        fixture.clayConfig([name]);
       });
 
-      it('only has one $manipulatorTarget', function() {
-        var configItem = fixture.clayConfig([component.name]).getAllItems()[0];
+      it('only has one $manipulatorTarget', function(): void {
+        if (typeof name !== 'string') return;
+        const configItem = fixture.clayConfig([name]).getAllItems()[0];
         assert.strictEqual(configItem.$manipulatorTarget.length, 1);
       });
 
-      it('only dispatches change events once', function() {
-        var configItem = fixture.clayConfig([component.name]).getAllItems()[0];
-        var handler = sinon.spy();
+      it('only dispatches change events once', function(): void {
+        if (typeof name !== 'string') return;
+        const configItem = fixture.clayConfig([name]).getAllItems()[0];
+        const handler = sinon.spy();
         configItem.on('change', handler);
         configItem.trigger('change');
         assert.strictEqual(handler.callCount, 1);

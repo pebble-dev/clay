@@ -1,17 +1,13 @@
 'use strict';
 
-var assert = require('chai').assert;
+import { assert } from 'chai';
 
-/**
- * @param {Object} object
- * @param {Array} properties
- * @return {void}
- */
-module.exports.checkReadOnly = function(object, properties) {
+function checkReadOnly(object: object, properties: string[]): void {
   properties.forEach(function(property) {
-    assert.strictEqual(
-      Object.getOwnPropertyDescriptor(object, property).writable,
-      false
-    );
+    const descriptor = Object.getOwnPropertyDescriptor(object, property);
+    assert.ok(descriptor, `Expected property "${property}" to be defined`);
+    assert.strictEqual(descriptor!.writable, false);
   });
-};
+}
+
+export = { checkReadOnly };
