@@ -1,180 +1,197 @@
 'use strict';
 
-var _ = require('../vendor/minified')._;
+import minified = require('../vendor/minified');
+import { ManipulatorDef, ClayItemInstance } from '../lib/types';
 
-/**
- * @returns {ClayItem|ClayEvents}
- * @extends {ClayItem}
- */
-function disable() {
+const _ = minified._;
+
+function isInputElement(el: HTMLElement): el is HTMLInputElement {
+  return 'checked' in el;
+}
+
+function normalizeColorValue(value: unknown): number | string {
+  if (typeof value === 'number') {
+    return value;
+  }
+
+  if (typeof value === 'string' && value) {
+    return value;
+  }
+
+  return 0;
+}
+
+// Shared manipulator methods
+function disable(this: ClayItemInstance): ClayItemInstance {
   if (this.$manipulatorTarget.get('disabled')) { return this; }
   this.$element.set('+disabled');
   this.$manipulatorTarget.set('disabled', true);
   return this.trigger('disabled');
 }
 
-/**
- * @returns {ClayItem|ClayEvents}
- * @extends {ClayItem}
- */
-function enable() {
+function enable(this: ClayItemInstance): ClayItemInstance {
   if (!this.$manipulatorTarget.get('disabled')) { return this; }
   this.$element.set('-disabled');
   this.$manipulatorTarget.set('disabled', false);
   return this.trigger('enabled');
 }
 
-/**
- * @returns {ClayItem|ClayEvents}
- * @extends {ClayItem}
- */
-function hide() {
+function hide(this: ClayItemInstance): ClayItemInstance {
   if (this.$element[0].classList.contains('hide')) { return this; }
   this.$element.set('+hide');
   return this.trigger('hide');
 }
 
-/**
- * @returns {ClayItem|ClayEvents}
- * @extends {ClayItem}
- */
-function show() {
+function show(this: ClayItemInstance): ClayItemInstance {
   if (!this.$element[0].classList.contains('hide')) { return this; }
   this.$element.set('-hide');
   return this.trigger('show');
 }
 
-module.exports = {
+const manipulators: Record<string, ManipulatorDef> = {
   html: {
-    get: function() {
+    get(this: ClayItemInstance) {
       return this.$manipulatorTarget.get('innerHTML');
     },
-    set: function(value) {
-      if (this.get() === value.toString(10)) { return this; }
+    set(this: ClayItemInstance, value: unknown) {
+      if (this.get() === String(value)) { return this; }
       this.$manipulatorTarget.set('innerHTML', value);
       return this.trigger('change');
     },
-    hide: hide,
-    show: show
+    hide,
+    show
   },
   button: {
-    get: function() {
+    get(this: ClayItemInstance) {
       return this.$manipulatorTarget.get('innerHTML');
     },
-    set: function(value) {
-      if (this.get() === value.toString(10)) { return this; }
+    set(this: ClayItemInstance, value: unknown) {
+      if (this.get() === String(value)) { return this; }
       this.$manipulatorTarget.set('innerHTML', value);
       return this.trigger('change');
     },
-    disable: disable,
-    enable: enable,
-    hide: hide,
-    show: show
+    disable,
+    enable,
+    hide,
+    show
   },
   val: {
-    get: function() {
+    get(this: ClayItemInstance) {
       return this.$manipulatorTarget.get('value');
     },
-    set: function(value) {
-      if (this.get() === value.toString(10)) { return this; }
+    set(this: ClayItemInstance, value: unknown) {
+      if (this.get() === String(value)) { return this; }
       this.$manipulatorTarget.set('value', value);
       return this.trigger('change');
     },
-    disable: disable,
-    enable: enable,
-    hide: hide,
-    show: show
+    disable,
+    enable,
+    hide,
+    show
   },
   slider: {
-    get: function() {
-      return parseFloat(this.$manipulatorTarget.get('value'));
+    get(this: ClayItemInstance) {
+      return parseFloat(String(this.$manipulatorTarget.get('value')));
     },
-    set: function(value) {
-      var initVal = this.get();
+    set(this: ClayItemInstance, value: unknown) {
+      const initVal = this.get();
       this.$manipulatorTarget.set('value', value);
       if (this.get() === initVal) { return this; }
       return this.trigger('change');
     },
-    disable: disable,
-    enable: enable,
-    hide: hide,
-    show: show
+    disable,
+    enable,
+    hide,
+    show
   },
   checked: {
-    get: function() {
+    get(this: ClayItemInstance) {
       return this.$manipulatorTarget.get('checked');
     },
-    set: function(value) {
+    set(this: ClayItemInstance, value: unknown) {
       if (!this.get() === !value) { return this; }
       this.$manipulatorTarget.set('checked', !!value);
       return this.trigger('change');
     },
-    disable: disable,
-    enable: enable,
-    hide: hide,
-    show: show
+    disable,
+    enable,
+    hide,
+    show
   },
   radiogroup: {
-    get: function() {
+    get(this: ClayItemInstance) {
       return this.$element.select('input:checked').get('value');
     },
-    set: function(value) {
-      if (this.get() === value.toString(10)) { return this; }
+    set(this: ClayItemInstance, value: unknown) {
+      if (this.get() === String(value)) { return this; }
       this.$element
-        .select('input[value="' + value.replace('"', '\\"') + '"]')
+        .select('input[value="' + String(value).replace('"', '\\"') + '"]')
         .set('checked', true);
       return this.trigger('change');
     },
-    disable: disable,
-    enable: enable,
-    hide: hide,
-    show: show
+    disable,
+    enable,
+    hide,
+    show
   },
   checkboxgroup: {
-    get: function() {
-      var result = [];
-      this.$element.select('input').each(function(item) {
-        result.push(!!item.checked);
+    get(this: ClayItemInstance) {
+      const result: boolean[] = [];
+      this.$element.select('input').each(function(item: HTMLElement) {
+        if (isInputElement(item)) {
+          result.push(!!item.checked);
+        }
       });
       return result;
     },
-    set: function(values) {
-      var self = this;
-      values = Array.isArray(values) ? values : [];
+    set(this: ClayItemInstance, values: unknown) {
+      const self = this;
+      /* istanbul ignore next — ternary artifact from TS compilation */
+      let valuesArray = Array.isArray(values) ? values : [];
 
-      while (values.length < this.get().length) {
-        values.push(false);
+      const current = this.get();
+      const currentArr = Array.isArray(current) ? current : [];
+      while (valuesArray.length < currentArr.length) {
+        valuesArray.push(false);
       }
 
-      if (_.equals(this.get(), values)) { return this; }
+      if (_.equals(this.get(), valuesArray)) { return this; }
 
       self.$element.select('input')
         .set('checked', false)
-        .each(function(item, index) {
-          item.checked = !!values[index];
+        .each(function(item: HTMLElement, index: number) {
+          if (isInputElement(item)) {
+            item.checked = !!valuesArray[index];
+          }
         });
 
       return self.trigger('change');
     },
-    disable: disable,
-    enable: enable,
-    hide: hide,
-    show: show
+    /* istanbul ignore next — shorthand property reference */
+    disable,
+    enable,
+    hide,
+    show
   },
   color: {
-    get: function() {
-      return parseInt(this.$manipulatorTarget.get('value'), 10) || 0;
+    get(this: ClayItemInstance) {
+      return parseInt(String(this.$manipulatorTarget.get('value')), 10) || 0;
     },
-    set: function(value) {
-      value = this.roundColorToLayout(value || 0);
+    set(this: ClayItemInstance, value: unknown) {
+      const colorValue = normalizeColorValue(value);
+      const roundColorFunc = this['roundColorToLayout'];
+      const roundedValue = typeof roundColorFunc === 'function' ? roundColorFunc.call(this, colorValue) : colorValue;
 
-      if (this.get() === value) { return this; }
-      this.$manipulatorTarget.set('value', value);
+      if (this.get() === roundedValue) { return this; }
+      this.$manipulatorTarget.set('value', roundedValue);
       return this.trigger('change');
     },
-    disable: disable,
-    enable: enable,
-    hide: hide,
-    show: show
+    /* istanbul ignore next — shorthand property reference */
+    disable,
+    enable,
+    hide,
+    show
   }
 };
+
+export = manipulators;

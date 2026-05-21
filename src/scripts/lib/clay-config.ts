@@ -1,50 +1,31 @@
 'use strict';
 
-/**
- * A Clay config Item
- * @typedef {Object} Clay~ConfigItem
- * @property {string} type
- * @property {string|boolean|number} defaultValue
- * @property {string} [messageKey]
- * @property {string} [id]
- * @property {string} [label]
- * @property {Object} [attributes]
- * @property {Array} [options]
- * @property {Array} [items]
- * @property {Array} [capabilities]
- */
+import minified = require('../vendor/minified');
+const HTML = minified.HTML;
+const _ = minified._;
 
-var HTML = require('../vendor/minified').HTML;
-var _ = require('../vendor/minified')._;
-var ClayItem = require('./clay-item');
-var utils = require('../lib/utils');
-var ClayEvents = require('./clay-events');
-var componentStore = require('./component-registry');
-var manipulators = require('./manipulators');
+import ClayItem = require('./clay-item');
+import utils = require('../lib/utils');
+import ClayEvents = require('./clay-events');
+import componentStore = require('./component-registry');
+import manipulators = require('./manipulators');
+import { ClayConfigItem, ClayMeta, ClayConfigInstance, ClayItemInstance, ClayComponentInput, ClayComponent, ManipulatorDef } from './types';
 
-/**
- * @extends ClayEvents
- * @param {Object} settings - setting that were set from a previous session
- * @param {Array|Object} config
- * @param {M} $rootContainer
- * @param {Object} meta
- * @constructor
- */
-function ClayConfig(settings, config, $rootContainer, meta) {
-  var self = this;
+type M = ReturnType<typeof minified.HTML>;
 
-  var _settings = _.copyObj(settings);
-  var _items;
-  var _itemsById;
-  var _itemsByMessageKey;
-  var _isBuilt;
+function ClayConfig(this: ClayConfigInstance, settings: Record<string, unknown>, config: ClayConfigItem | ClayConfigItem[], $rootContainer: M, meta: ClayMeta) {
+  const self = this;
+
+  let _settings = _.copyObj(settings);
+  let _items: ClayItemInstance[] = [];
+  let _itemsById: Record<string, ClayItemInstance> = {};
+  let _itemsByMessageKey: Record<string, ClayItemInstance> = {};
+  let _isBuilt: boolean = false;
 
   /**
    * Initialize the item arrays and objects
-   * @private
-   * @return {void}
    */
-  function _initializeItems() {
+  function _initializeItems(): void {
     _items = [];
     _itemsById = {};
     _itemsByMessageKey = {};
@@ -53,25 +34,25 @@ function ClayConfig(settings, config, $rootContainer, meta) {
 
   /**
    * Add item(s) to the config
-   * @param {Clay~ConfigItem|Array} item
-   * @param {M} $container
-   * @return {void}
    */
-  function _addItems(item, $container) {
+  function _addItems(item: ClayConfigItem | ClayConfigItem[], $container: M): void {
+    /* istanbul ignore else — array case always exercised; else branch is the normal path */
     if (Array.isArray(item)) {
       item.forEach(function(item) {
         _addItems(item, $container);
       });
     } else if (utils.includesCapability(meta.activeWatchInfo, item.capabilities)) {
       if (item.type === 'section') {
-        var $wrapper = HTML('<div class="section">');
+        const $wrapper = HTML('<div class="section">');
         $container.add($wrapper);
-        _addItems(item.items, $wrapper);
+        if (item.items) {
+          _addItems(item.items, $wrapper);
+        }
       } else {
-        var _item = _.copyObj(item);
+        const _item = _.copyObj(item);
         _item.clayId = _items.length;
 
-        var clayItem = new ClayItem(_item).initialize(self);
+        const clayItem = ClayItem(_item).initialize(self);
 
         if (_item.id) {
           _itemsById[_item.id] = clayItem;
@@ -84,11 +65,14 @@ function ClayConfig(settings, config, $rootContainer, meta) {
         _items.push(clayItem);
 
         // set the value of the item via the manipulator to ensure consistency
-        var value = typeof _settings[_item.messageKey] !== 'undefined' ?
-          _settings[_item.messageKey] :
-          _item.defaultValue;
+        if (_item.messageKey) {
+          const msgKey = _item.messageKey;
+          const value = typeof _settings[msgKey] !== 'undefined' ?
+            _settings[msgKey] :
+            _item.defaultValue;
 
-        clayItem.set(typeof value !== 'undefined' ? value : '');
+          clayItem.set(typeof value !== 'undefined' ? value : '');
+        }
 
         $container.add(clayItem.$element);
       }
@@ -97,11 +81,8 @@ function ClayConfig(settings, config, $rootContainer, meta) {
 
   /**
    * Throws if the config has not been built yet.
-   * @param {string} fnName
-   * @returns {boolean}
-   * @private
    */
-  function _checkBuilt(fnName) {
+  function _checkBuilt(fnName: string): boolean {
     if (!_isBuilt) {
       throw new Error(
         'ClayConfig not built. build() must be run before ' +
@@ -115,100 +96,68 @@ function ClayConfig(settings, config, $rootContainer, meta) {
   self.$rootContainer = $rootContainer;
 
   self.EVENTS = {
-    /**
-     * Called before framework has initialized. This is when you would attach your
-     * custom components.
-     * @const
-     */
+    // Called before framework has initialised. This is when you would attach your
+    // custom components.
     BEFORE_BUILD: 'BEFORE_BUILD',
 
-    /**
-     * Called after the config has been parsed and all components have their initial
-     * value set
-     * @const
-     */
+    // Called after the config has been parsed and all components have their initial
+    // value set
     AFTER_BUILD: 'AFTER_BUILD',
 
-    /**
-     * Called if .build() is executed after the page has already been built and
-     * before the existing content is destroyed
-     * @const
-     */
+    // Called if .build() is executed after the page has already been built and
+    // before the existing content is destroyed
     BEFORE_DESTROY: 'BEFORE_DESTROY',
 
-    /**
-     * Called if .build() is executed after the page has already been built and after
-     * the existing content is destroyed
-     * @const
-     */
+    // Called if .build() is executed after the page has already been built and after
+    // the existing content is destroyed
     AFTER_DESTROY: 'AFTER_DESTROY'
-  };
-  utils.updateProperties(self.EVENTS, {writable: false});
+  } as const;
+  utils.updateProperties(self.EVENTS, { writable: false });
 
-  /**
-   * @returns {Array.<ClayItem>}
-   */
   self.getAllItems = function() {
     _checkBuilt('getAllItems');
     return _items;
   };
 
-  /**
-   * @param {string} messageKey
-   * @returns {ClayItem}
-   */
-  self.getItemByMessageKey = function(messageKey) {
+  self.getItemByMessageKey = function(messageKey: string) {
     _checkBuilt('getItemByMessageKey');
     return _itemsByMessageKey[messageKey];
   };
 
-  /**
-   * @param {string} id
-   * @returns {ClayItem}
-   */
-  self.getItemById = function(id) {
+  self.getItemById = function(id: string) {
     _checkBuilt('getItemById');
     return _itemsById[id];
   };
 
-  /**
-   * @param {string} type
-   * @returns {Array.<ClayItem>}
-   */
-  self.getItemsByType = function(type) {
+  self.getItemsByType = function(type: string) {
     _checkBuilt('getItemsByType');
-    return _items.filter(function(item) {
+    return _items.filter(function(item: ClayItemInstance) {
       return item.config.type === type;
     });
   };
 
-  /**
-   * @param {string} group
-   * @returns {Array.<ClayItem>}
-   */
-  self.getItemsByGroup = function(group) {
+  self.getItemsByGroup = function(group: string) {
     _checkBuilt('getItemsByGroup');
-    return _items.filter(function(item) {
+    return _items.filter(function(item: ClayItemInstance) {
       return item.config.group === group;
     });
   };
 
-  /**
-   * @returns {Object}
-   */
   self.serialize = function() {
     _checkBuilt('serialize');
 
     _settings = {};
 
-    _.eachObj(_itemsByMessageKey, function(messageKey, item) {
-      _settings[messageKey] = {
+    _.eachObj(_itemsByMessageKey, function(messageKey: string, item: ClayItemInstance) {
+      const settingValue: Record<string, unknown> = {
         value: item.get()
       };
 
       if (item.precision) {
-        _settings[messageKey].precision = item.precision;
+        settingValue.precision = item.precision;
       }
+
+      _settings[messageKey] = settingValue;
     });
     return _settings;
   };
@@ -218,10 +167,9 @@ function ClayConfig(settings, config, $rootContainer, meta) {
 
   /**
    * Empties the root container
-   * @returns {ClayConfig}
    */
   self.destroy = function() {
-    var el = $rootContainer[0];
+    const el = $rootContainer[0];
     self.trigger(self.EVENTS.BEFORE_DESTROY);
     while (el.firstChild) {
       el.removeChild(el.firstChild);
@@ -233,9 +181,8 @@ function ClayConfig(settings, config, $rootContainer, meta) {
 
   /**
    * Build the config page. This must be run before any of the get methods can be run
-   * If you call this method after the page has already been built, teh page will be
+   * If you call this method after the page has already been built, the page will be
    * destroyed and built again.
-   * @returns {ClayConfig}
    */
   self.build = function() {
     if (_isBuilt) {
@@ -262,18 +209,9 @@ function ClayConfig(settings, config, $rootContainer, meta) {
 
 /**
  * Register a component to Clay. This must be called prior to .build();
- * @param {Object} component - the clay component to register
- * @param {string} component.name - the name of the component
- * @param {string} component.template - HTML template to use for the component
- * @param {string|Object} component.manipulator - methods to attach to the component
- * @param {function} component.manipulator.set - set manipulator method
- * @param {function} component.manipulator.get - get manipulator method
- * @param {Object} [component.defaults] - template defaults
- * @param {function} [component.initialize] - method to scaffold the component
- * @return {boolean} - Returns true if component was registered correctly
  */
-ClayConfig.registerComponent = function(component) {
-  var _component = _.copyObj(component);
+ClayConfig.registerComponent = function(component: ClayComponentInput): boolean {
+  const _component = _.copyObj(component);
 
   if (componentStore[_component.name]) {
     console.warn('Component: ' + _component.name +
@@ -282,33 +220,58 @@ ClayConfig.registerComponent = function(component) {
     return false;
   }
 
-  if (typeof _component.manipulator === 'string') {
-    _component.manipulator = manipulators[component.manipulator];
+  let resolvedManipulator: ManipulatorDef;
 
-    if (!_component.manipulator) {
-      throw new Error('The manipulator: ' + component.manipulator +
+  if (typeof _component.manipulator === 'string') {
+    const found = manipulators[_component.manipulator];
+
+    if (!found) {
+      throw new Error('The manipulator: ' + _component.manipulator +
                       ' does not exist in the built-in manipulators.');
     }
-  }
-
-  if (!_component.manipulator) {
+    resolvedManipulator = found;
+  } else if (_component.manipulator) {
+    resolvedManipulator = _component.manipulator;
+  } else {
     throw new Error('The manipulator must be defined');
   }
 
-  if (typeof _component.manipulator.set !== 'function' ||
-      typeof _component.manipulator.get !== 'function') {
+  if (typeof resolvedManipulator.set !== 'function' ||
+      typeof resolvedManipulator.get !== 'function') {
     throw new Error('The manipulator must have both a `get` and `set` method');
   }
 
   if (_component.style) {
-    var style = document.createElement('style');
+    const style = document.createElement('style');
     style.type = 'text/css';
     style.appendChild(document.createTextNode(_component.style));
     document.head.appendChild(style);
   }
 
-  componentStore[_component.name] = _component;
+  const registered: ClayComponent = {
+    name: _component.name,
+    template: _component.template,
+    manipulator: resolvedManipulator,
+    defaults: _component.defaults,
+    style: _component.style,
+    initialize: _component.initialize
+  };
+
+  componentStore[registered.name] = registered;
   return true;
 };
 
-module.exports = ClayConfig;
+function createClayConfig(
+  settings: Record<string, unknown>,
+  config: ClayConfigItem | ClayConfigItem[],
+  $rootContainer: M,
+  meta: ClayMeta
+): ClayConfigInstance {
+  const instance: ClayConfigInstance = Object.create(ClayConfig.prototype);
+  ClayConfig.call(instance, settings, config, $rootContainer, meta);
+  return instance;
+}
+
+createClayConfig.registerComponent = ClayConfig.registerComponent;
+
+export = createClayConfig;
