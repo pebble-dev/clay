@@ -1,32 +1,42 @@
 'use strict';
 
-var minified = require('./vendor/minified');
-var ClayConfig = require('./lib/clay-config');
+import minified = require('./vendor/minified');
+import ClayConfig = require('./lib/clay-config');
+import { ClayComponentInput, ClayConfigItem, ClayMeta } from './lib/types';
 
-var $ = minified.$;
-var _ = minified._;
+const $ = minified.$;
+const _ = minified._;
 
-var config = _.extend([], window.clayConfig || []);
-var settings = _.extend({}, window.claySettings || {});
-var returnTo = window.returnTo || 'pebblejs://close#';
-var customFn = window.customFn || function() {};
-var clayComponents = window.clayComponents || {};
-var clayMeta = window.clayMeta || {};
+declare const window: Window & {
+  clayConfig?: ClayConfigItem[];
+  claySettings?: Record<string, unknown>;
+  returnTo?: string;
+  customFn?: (...args: unknown[]) => void;
+  clayComponents?: Record<string, ClayComponentInput>;
+  clayMeta?: ClayMeta;
+};
 
-var platform = window.navigator.userAgent.match(/android/i) ? 'android' : 'ios';
+const emptyConfig: ClayConfigItem[] = [];
+const config = emptyConfig.concat(window.clayConfig || []);
+const settings = Object.assign({}, window.claySettings || {});
+const returnTo = window.returnTo || 'pebblejs://close#';
+const customFn = window.customFn || function() {};
+const clayComponents = window.clayComponents || {};
+const clayMeta: ClayMeta = window.clayMeta || { activeWatchInfo: null };
+
+const platform = window.navigator.userAgent.match(/android/i) ? 'android' : 'ios';
 document.documentElement.classList.add('platform-' + platform);
 
 // Register the passed components
-_.eachObj(clayComponents, function(key, component) {
+_.eachObj(clayComponents, function(_key: string, component: ClayComponentInput) {
   ClayConfig.registerComponent(component);
 });
 
-var $mainForm = $('#main-form');
-var clayConfig = new ClayConfig(settings, config, $mainForm, clayMeta);
+const $mainForm = $('#main-form');
+const clayConfig = ClayConfig(settings, config, $mainForm, clayMeta);
 
-// add listeners here
+// Add listeners here
 $mainForm.on('submit', function() {
-  // Set the return URL depending on the runtime environment
   location.href = returnTo +
                   encodeURIComponent(JSON.stringify(clayConfig.serialize()));
 });
