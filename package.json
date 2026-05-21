@@ -1,6 +1,6 @@
 {
   "name": "@rebble/clay",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "Pebble Config Framework",
   "types": "index.d.ts",
   "scripts": {
