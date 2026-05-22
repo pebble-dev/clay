@@ -1,4 +1,3 @@
-'use strict';
 
 import type { ActiveWatchInfo } from './types';
 
@@ -155,4 +154,4 @@ function includesCapability(activeWatchInfo: ActiveWatchInfo | null, capabilitie
   return result.indexOf(false) === -1;
 }
 
-export = { updateProperties, capabilityMap, includesCapability };
+export default { updateProperties, capabilityMap, includesCapability };

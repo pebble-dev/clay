@@ -1,7 +1,6 @@
-'use strict';
 
 import { assert } from 'chai';
-import fixture = require('../../fixture');
+import fixture from '../../fixture';
 
 describe('component - slider', function(): void {
   it('sets the value display to the correct value on set', function(): void {

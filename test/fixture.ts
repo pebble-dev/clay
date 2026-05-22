@@ -1,11 +1,10 @@
-'use strict';
 
-import minified = require('../src/scripts/vendor/minified');
-import createClayItem = require('../src/scripts/lib/clay-item');
-import createClayConfig = require('../src/scripts/lib/clay-config');
-import Clay = require('../index');
-import components = require('../src/scripts/components');
-import componentRegistry = require('../src/scripts/lib/component-registry');
+import minified from '../src/scripts/vendor/minified';
+import createClayItem from '../src/scripts/lib/clay-item';
+import createClayConfig from '../src/scripts/lib/clay-config';
+import Clay from '../index';
+import components from '../src/scripts/components';
+import componentRegistry from '../src/scripts/lib/component-registry';
 import type { ClayConfigItem, ClayMeta, ClayComponentInput } from '../src/scripts/lib/types';
 
 const _ = minified._;
@@ -188,7 +187,7 @@ function messageKeysExpected(expected: Record<string, unknown>): Record<string, 
   return result;
 }
 
-export = {
+export default {
   meta,
   configItem,
   clayItem,

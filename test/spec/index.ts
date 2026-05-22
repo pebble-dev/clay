@@ -1,11 +1,10 @@
-'use strict';
 
-import fixture = require('../fixture');
-import Clay = require('../../index');
-import toSource = require('tosource');
+import fixture from '../fixture';
+import Clay from '../../index';
+import toSource from 'tosource';
 import { assert } from 'chai';
-import standardComponents = require('../../src/scripts/components');
-import sinon = require('sinon');
+import standardComponents from '../../src/scripts/components';
+import sinon from 'sinon';
 
 declare const global: Record<string, unknown>;
 

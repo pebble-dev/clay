@@ -1,7 +1,6 @@
-'use strict';
 
 import { assert } from 'chai';
-import fixture = require('../../fixture');
+import fixture from '../../fixture';
 
 describe('component - select', function(): void {
   it('sets the value display to the correct value on change', function(): void {

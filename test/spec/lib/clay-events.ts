@@ -1,9 +1,8 @@
-'use strict';
 
-import sinon = require('sinon');
+import sinon from 'sinon';
 import { assert } from 'chai';
-import ClayEvents = require('../../../src/scripts/lib/clay-events');
-import minified = require('../../../src/scripts/vendor/minified');
+import ClayEvents from '../../../src/scripts/lib/clay-events';
+import minified from '../../../src/scripts/vendor/minified';
 import type { ClayEventMethods } from '../../../src/scripts/lib/types';
 
 const $ = minified.$;

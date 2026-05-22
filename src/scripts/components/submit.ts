@@ -1,6 +1,5 @@
-'use strict';
 
-export = {
+export default {
   name: 'submit',
   template: require('../../templates/components/submit.tpl'),
   style: require('../../../tmp/submit.css'),

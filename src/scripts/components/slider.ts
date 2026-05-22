@@ -1,8 +1,7 @@
-'use strict';
 
 import { ClayItemInstance } from '../lib/types';
 
-export = {
+export default {
   name: 'slider',
   template: require('../../templates/components/slider.tpl'),
   style: require('../../../tmp/slider.css'),

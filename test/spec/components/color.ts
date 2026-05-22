@@ -1,7 +1,6 @@
-'use strict';
 
 import { assert } from 'chai';
-import fixture = require('../../fixture');
+import fixture from '../../fixture';
 import type { ClayConfigInstance, ClayItemInstance } from '../../../src/scripts/lib/types';
 
 const sunlightColorMap: Record<string, string> = {

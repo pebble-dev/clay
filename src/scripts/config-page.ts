@@ -1,7 +1,6 @@
-'use strict';
 
-import minified = require('./vendor/minified');
-import ClayConfig = require('./lib/clay-config');
+import minified from './vendor/minified';
+import ClayConfig from './lib/clay-config';
 import { ClayComponentInput, ClayConfigItem, ClayMeta } from './lib/types';
 
 const $ = minified.$;

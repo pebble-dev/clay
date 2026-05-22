@@ -1,19 +1,18 @@
-'use strict';
 
 import { ClayComponentInput } from '../lib/types';
 
-import color = require('./color');
-import footer = require('./footer');
-import heading = require('./heading');
-import input = require('./input');
-import select = require('./select');
-import submit = require('./submit');
-import text = require('./text');
-import toggle = require('./toggle');
-import radiogroup = require('./radiogroup');
-import checkboxgroup = require('./checkboxgroup');
-import button = require('./button');
-import slider = require('./slider');
+import color from './color';
+import footer from './footer';
+import heading from './heading';
+import input from './input';
+import select from './select';
+import submit from './submit';
+import text from './text';
+import toggle from './toggle';
+import radiogroup from './radiogroup';
+import checkboxgroup from './checkboxgroup';
+import button from './button';
+import slider from './slider';
 
 const components: Record<string, ClayComponentInput> = {
   color,
@@ -30,4 +29,4 @@ const components: Record<string, ClayComponentInput> = {
   slider
 };
 
-export = components;
+export default components;

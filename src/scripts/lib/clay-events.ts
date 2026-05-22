@@ -1,6 +1,5 @@
-'use strict';
 
-import minified = require('../vendor/minified');
+import minified from '../vendor/minified';
 import { ClayEventMethods } from '../lib/types';
 
 const $ = minified.$;
@@ -100,4 +99,4 @@ function ClayEvents(this: ClayEventMethods, $eventTarget: M) {
   };
 }
 
-export = ClayEvents;
+export default ClayEvents;

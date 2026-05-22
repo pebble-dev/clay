@@ -1,8 +1,7 @@
-'use strict';
 
 import { ClayItemInstance } from '../lib/types';
 
-export = {
+export default {
   name: 'select',
   template: require('../../templates/components/select.tpl'),
   style: require('../../../tmp/select.css'),

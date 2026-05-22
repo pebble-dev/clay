@@ -1,8 +1,7 @@
-'use strict';
 
 import { ClayItemInstance, ClayConfigInstance } from '../lib/types';
 
-export = {
+export default {
   name: 'color',
   template: require('../../templates/components/color.tpl'),
   style: require('../../../tmp/color.css'),

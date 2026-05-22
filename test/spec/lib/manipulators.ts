@@ -1,8 +1,7 @@
-'use strict';
 
 import { assert } from 'chai';
-import sinon = require('sinon');
-import fixture = require('../../fixture');
+import sinon from 'sinon';
+import fixture from '../../fixture';
 import type { ClayConfigItem } from '../../../src/scripts/lib/types';
 
 describe('manipulators', function() {

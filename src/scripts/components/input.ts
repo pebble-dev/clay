@@ -1,6 +1,5 @@
-'use strict';
 
-export = {
+export default {
   name: 'input',
   template: require('../../templates/components/input.tpl'),
   style: require('../../../tmp/input.css'),

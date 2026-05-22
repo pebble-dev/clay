@@ -1,12 +1,11 @@
-'use strict';
 
 import { assert } from 'chai';
-import Joi = require('joi');
-import minified = require('../../../src/scripts/vendor/minified');
-import components = require('../../../src/scripts/components');
-import manipulators = require('../../../src/scripts/lib/manipulators');
-import fixture = require('../../fixture');
-import sinon = require('sinon');
+import Joi from 'joi';
+import minified from '../../../src/scripts/vendor/minified';
+import components from '../../../src/scripts/components';
+import manipulators from '../../../src/scripts/lib/manipulators';
+import fixture from '../../fixture';
+import sinon from 'sinon';
 
 const _ = minified._;
 const HTML = minified.HTML;

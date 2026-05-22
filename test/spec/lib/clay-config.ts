@@ -1,12 +1,11 @@
-'use strict';
 
 import { assert } from 'chai';
-import sinon = require('sinon');
-import _ = require('../../../src/scripts/vendor/minified');
-import selectComponent = require('../../../src/scripts/components/select');
-import componentRegistry = require('../../../src/scripts/lib/component-registry');
-import testUtils = require('../../test-utils');
-import fixtures = require('../../fixture');
+import sinon from 'sinon';
+import _ from '../../../src/scripts/vendor/minified';
+import selectComponent from '../../../src/scripts/components/select';
+import componentRegistry from '../../../src/scripts/lib/component-registry';
+import testUtils from '../../test-utils';
+import fixtures from '../../fixture';
 import type { ClayConfigItem } from '../../../src/scripts/lib/types';
 
 const checkReadOnly = testUtils.checkReadOnly;

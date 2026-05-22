@@ -1,14 +1,13 @@
-'use strict';
 
-import minified = require('../vendor/minified');
+import minified from '../vendor/minified';
 const HTML = minified.HTML;
 const _ = minified._;
 
-import ClayItem = require('./clay-item');
-import utils = require('../lib/utils');
-import ClayEvents = require('./clay-events');
-import componentStore = require('./component-registry');
-import manipulators = require('./manipulators');
+import ClayItem from './clay-item';
+import utils from '../lib/utils';
+import ClayEvents from './clay-events';
+import componentStore from './component-registry';
+import manipulators from './manipulators';
 import { ClayConfigItem, ClayMeta, ClayConfigInstance, ClayItemInstance, ClayComponentInput, ClayComponent, ManipulatorDef } from './types';
 
 type M = ReturnType<typeof minified.HTML>;
@@ -274,4 +273,4 @@ function createClayConfig(
 
 createClayConfig.registerComponent = ClayConfig.registerComponent;
 
-export = createClayConfig;
+export default createClayConfig;

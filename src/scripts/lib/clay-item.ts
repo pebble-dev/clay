@@ -1,9 +1,8 @@
-'use strict';
 
-import componentRegistry = require('./component-registry');
-import minified = require('../vendor/minified');
-import utils = require('../lib/utils');
-import ClayEvents = require('./clay-events');
+import componentRegistry from './component-registry';
+import minified from '../vendor/minified';
+import utils from '../lib/utils';
+import ClayEvents from './clay-events';
 import { ClayItemInstance, ClayConfigItem, ClayConfigInstance } from './types';
 
 const _ = minified._;
@@ -75,4 +74,4 @@ function createClayItem(config: ClayConfigItem): ClayItemInstance {
   return instance;
 }
 
-export = createClayItem;
+export default createClayItem;

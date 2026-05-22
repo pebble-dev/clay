@@ -1,12 +1,11 @@
-'use strict';
 
 import { assert } from 'chai';
-import sinon = require('sinon');
-import testUtils = require('../../test-utils');
-import createClayItem = require('../../../src/scripts/lib/clay-item');
-import minified = require('../../../src/scripts/vendor/minified');
-import fixture = require('../../fixture');
-import componentRegistry = require('../../../src/scripts/lib/component-registry');
+import sinon from 'sinon';
+import testUtils from '../../test-utils';
+import createClayItem from '../../../src/scripts/lib/clay-item';
+import minified from '../../../src/scripts/vendor/minified';
+import fixture from '../../fixture';
+import componentRegistry from '../../../src/scripts/lib/component-registry';
 
 describe('ClayItem', function(): void {
   it('defines read-only properties', function(): void {

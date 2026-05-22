@@ -1,4 +1,3 @@
-'use strict';
 
 import { assert } from 'chai';
 
@@ -10,4 +9,4 @@ function checkReadOnly(object: object, properties: string[]): void {
   });
 }
 
-export = { checkReadOnly };
+export default { checkReadOnly };

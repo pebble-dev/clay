@@ -1,8 +1,7 @@
-'use strict';
 
-import configPageHtml = require('./tmp/config-page.html');
-import toSource = require('tosource');
-import standardComponents = require('./src/scripts/components');
+import configPageHtml from './tmp/config-page.html';
+import toSource from 'tosource';
+import standardComponents from './src/scripts/components';
 function extractVersion(): string {
   const pkg: unknown = require('./package.json');
   /* istanbul ignore else — TS defensive guard for untyped require */
@@ -12,11 +11,11 @@ function extractVersion(): string {
   return '';
 }
 const version = extractVersion();
-import messageKeys = require('message_keys');
+import messageKeys from 'message_keys';
 
 import { ClayConfigItem, ClayMeta } from './src/scripts/lib/types';
 
-import deepcopy = require('deepcopy/build/deepcopy.min');
+import deepcopy from 'deepcopy/build/deepcopy.min';
 
 interface PebbleObject {
   addEventListener(event: string, handler: (...args: unknown[]) => void): void;
@@ -417,4 +416,4 @@ createClay.encodeDataUri = Clay.encodeDataUri;
 createClay.prepareForAppMessage = Clay.prepareForAppMessage;
 createClay.prepareSettingsForAppMessage = Clay.prepareSettingsForAppMessage;
 
-export = createClay;
+export default createClay;

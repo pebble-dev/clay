@@ -1,6 +1,5 @@
-'use strict';
 
-import minified = require('../vendor/minified');
+import minified from '../vendor/minified';
 import { ManipulatorDef, ClayItemInstance } from '../lib/types';
 
 const _ = minified._;
@@ -194,4 +193,4 @@ const manipulators: Record<string, ManipulatorDef> = {
   }
 };
 
-export = manipulators;
+export default manipulators;

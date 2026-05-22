@@ -1,6 +1,5 @@
-'use strict';
 
-import utils = require('../../../src/scripts/lib/utils');
+import utils from '../../../src/scripts/lib/utils';
 import { assert } from 'chai';
 
 describe('Utils', function(): void {

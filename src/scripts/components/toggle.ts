@@ -1,6 +1,5 @@
-'use strict';
 
-export = {
+export default {
   name: 'toggle',
   template: require('../../templates/components/toggle.tpl'),
   style: require('../../../tmp/toggle.css'),
