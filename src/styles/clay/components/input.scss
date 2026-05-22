@@ -32,14 +32,14 @@
     color: $color-white;
     font-size: inherit;
     appearance: none;
-    min-height: $item-spacing-v + ($base-height + 0rem) ;
+    min-height: $item-spacing-v + $base-height ;
 
-    @include placeholder {
+    &::placeholder {
       color: $color-gray-8;
     }
 
     &:focus {
-      @include placeholder {
+      &::placeholder {
         color: $color-gray-6;
       }
       border: none;

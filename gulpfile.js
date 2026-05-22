@@ -17,13 +17,10 @@ var insert = require('gulp-insert');
 var tsify = require('tsify');
 var clayPackage = require('./package.json');
 
-var sassIncludePaths = [].concat(
-  require('bourbon').includePaths,
-  'src/styles'
-);
+var sassIncludePaths = ['src/styles'];
 
 var autoprefixerOptions = {
-  browsers: ['Android 4', 'iOS 8'],
+  overrideBrowserslist: ['Android 4', 'iOS 8'],
   cascade: false
 };
 
