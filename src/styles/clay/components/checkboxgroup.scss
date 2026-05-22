@@ -1,24 +1,25 @@
-@import "clay";
+@use 'sass:math';
+@use '../' as *;
 
 .component-checkbox {
 
   display: block;
 
   .section & {
-    padding-right: $item-spacing-h / 2;
+    padding-right: math.div($item-spacing-h, 2);
   }
 
   > .label {
     display: block;
-    padding-bottom: $item-spacing-v / 2;
+    padding-bottom: math.div($item-spacing-v, 2);
   }
 
   .checkbox-group {
 
-    padding-bottom: $item-spacing-v / 2;
+    padding-bottom: math.div($item-spacing-v, 2);
 
     label {
-      padding: $item-spacing-v / 2 $item-spacing-h / 2;
+      padding: math.div($item-spacing-v, 2) math.div($item-spacing-h, 2);
     }
 
     .label {

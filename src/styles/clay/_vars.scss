@@ -1,11 +1,13 @@
+@use 'sass:math';
+
 // Base settings
 $em-base: 17px;
 
-// custom vars
+// Custom vars
 $base-line-height: 1.4;
 $base-height: $base-line-height * $em-base;
 $border-radius: 0.25rem;
-$item-spacing-v: $base-height / 2;
+$item-spacing-v: math.div($base-height, 2);
 $item-spacing-h: 0.75rem;
 $golden: 1.618;
 $small-component-width: $base-height * $golden;
