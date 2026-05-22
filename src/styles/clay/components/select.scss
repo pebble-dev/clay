@@ -1,5 +1,5 @@
-@import "bourbon";
-@import "clay";
+@use 'sass:math';
+@use '../' as *;
 
 .component-select {
 
@@ -23,7 +23,11 @@
       right: 0;
       top: 50%;
       margin-top: -0.1rem;
-      @include triangle($triangle-size, $color-orange, down);
+      width: 0;
+      height: 0;
+      border-left: math.div($triangle-size, 2) solid transparent;
+      border-right: math.div($triangle-size, 2) solid transparent;
+      border-top: $triangle-size solid $color-orange;
     }
   }
 

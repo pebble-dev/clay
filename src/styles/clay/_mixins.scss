@@ -1,4 +1,5 @@
-@import "vars";
+@use 'sass:math';
+@use 'vars' as *;
 
 @mixin font-pfdin($weight: normal) {
 
@@ -29,9 +30,9 @@
 }
 
 @mixin font-size($size: 1) {
-  $font-size:  $size * 1rem;
-  font-size:$font-size;
-  line-height: $base-line-height * ceil($font-size / $base-line-height);
+  $font-size: $size * 1rem;
+  font-size: $font-size;
+  line-height: $base-line-height * math.ceil(math.div($font-size, $base-line-height));
 }
 
 @mixin tap-highlight($color: rgba(255, 255, 255, 0.1)) {

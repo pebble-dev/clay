@@ -1,4 +1,5 @@
-@import "clay";
+@use 'sass:math';
+@use '../' as *;
 
 .component-toggle {
 
@@ -35,7 +36,7 @@
       position: absolute;
       left: 0;
       display: block;
-      top: ($marker-diameter - $slide-height) / 2 * -1;
+      top: math.div($marker-diameter - $slide-height, 2) * -1;
       transition: transform 150ms linear;
       box-shadow: $box-shadow-small-components;
     }

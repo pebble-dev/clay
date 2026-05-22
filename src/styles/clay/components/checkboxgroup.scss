@@ -1,25 +1,25 @@
-@import "bourbon";
-@import "clay";
+@use 'sass:math';
+@use '../' as *;
 
 .component-checkbox {
 
   display: block;
 
   .section & {
-    padding-right: $item-spacing-h / 2;
+    padding-right: math.div($item-spacing-h, 2);
   }
 
   > .label {
     display: block;
-    padding-bottom: $item-spacing-v / 2;
+    padding-bottom: math.div($item-spacing-v, 2);
   }
 
   .checkbox-group {
 
-    padding-bottom: $item-spacing-v / 2;
+    padding-bottom: math.div($item-spacing-v, 2);
 
     label {
-      padding: $item-spacing-v / 2 $item-spacing-h / 2;
+      padding: math.div($item-spacing-v, 2) math.div($item-spacing-h, 2);
     }
 
     .label {
@@ -37,7 +37,7 @@
       border-radius: $border-radius;
       width: $base-height;
       height: $base-height;
-      border: rem(2px) solid $color-gray-7;
+      border: 2px solid $color-gray-7;
       flex-shrink: 0;
     }
 
@@ -56,8 +56,8 @@
         width: 0.5rem;
         height: 1rem;
         border: 0 solid $color-white;
-        border-right-width: rem(2px);
-        border-bottom-width: rem(2px);
+        border-right-width: 2px;
+        border-bottom-width: 2px;
 
       }
     }

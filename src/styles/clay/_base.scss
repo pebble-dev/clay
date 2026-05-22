@@ -1,5 +1,5 @@
-@import "bourbon";
-@import "clay";
+@use 'vars' as *;
+@use 'mixins' as *;
 
 html, body {
   @include font-pfdin(regular);
@@ -93,7 +93,7 @@ label {
     display: inline-block;
     color: $color-white;
     background: $color-orange;
-    border-radius: $size / 2;
+    border-radius: calc($size / 2);
     width: $size;
     text-align: center;
     height: $size;
@@ -153,8 +153,8 @@ label {
       display: block;
       position: absolute;
       top: 0;
-      left: $item-spacing-h / 2;
-      right: $item-spacing-h / 2;
+      left: calc($item-spacing-h / 2);
+      right: calc($item-spacing-h / 2);
       height: 1px;
       pointer-events: none;
     }
@@ -198,4 +198,3 @@ label {
   width:100%;
   border-collapse: collapse;
 }
-
