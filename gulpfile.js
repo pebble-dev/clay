@@ -14,6 +14,7 @@ var autoprefixer = require('gulp-autoprefixer');
 var uglify = require('gulp-uglify');
 var autoprefixify = require('./src/scripts/vendor/autoprefixify');
 var insert = require('gulp-insert');
+var tsify = require('tsify');
 var clayPackage = require('./package.json');
 
 var sassIncludePaths = [].concat(
@@ -39,7 +40,8 @@ gulp.task('clean-js', function() {
 * @returns {string}
 */
 function taskJs() {
-  return browserify('src/scripts/config-page.js', { debug: true })
+  return browserify('src/scripts/config-page.ts', { debug: true })
+    .plugin(tsify, { noEmit: false, forceConsistentCasingInFileNames: false })
     .transform('deamdify')
     .bundle()
     .pipe(source('config-page.js'))
@@ -93,14 +95,16 @@ gulp.task('inlineHtml', gulp.series('js', 'sass', taskInlineHtml));
 * @returns {string}
 */
 function taskClay() {
-  return browserify('index.js', {
+  return browserify('index.ts', {
     debug: false,
-    standalone: clayPackage.name
+    standalone: clayPackage.name,
+    extensions: ['.ts']
   })
+    .plugin(tsify, { noEmit: false, forceConsistentCasingInFileNames: false })
     .transform('deamdify')
     .transform(stringify(stringifyOptions))
     // .transform(autoprefixify, autoprefixerOptions)
-    .require(require.resolve('./index'), {expose: clayPackage.name})
+    .require(require.resolve('./index.ts'), {expose: clayPackage.name})
     .exclude('message_keys')
     .bundle()
     .pipe(source('index.js'))
@@ -114,11 +118,10 @@ function taskClay() {
 
 gulp.task('clay', gulp.series('inlineHtml', taskClay));
 
-// Validates the curated index.d.ts against test/type-checks.ts.
-// For per-file reference declarations in dist-types/, run: npm run build:types
+// Type-checks all TypeScript and JavaScript source files.
 gulp.task('types', function(done) {
   var exec = require('child_process').exec;
-  exec('npx tsc -p tsconfig.typecheck.json', function(err, stdout, stderr) {
+  exec('npx tsc --noEmit', function(err, stdout, stderr) {
     if (stdout) { console.log(stdout); }
     if (stderr) { console.error(stderr); }
     done(err);
